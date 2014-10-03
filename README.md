@@ -19,7 +19,9 @@ coordinates.
 This is part of a research project at Purdue. It is also hosted as a
 [project at Purdue University Research Repository (PURR)]
 (https://purr.purdue.edu/projects/ptolemy/view 
-"Ptolemy Layer for Google Earth").
+"Ptolemy Layer for Google Earth"). We are also building [a website
+for the project](http://www.claudiusptolemy.org/), but it's pretty bare 
+at the moment. We hope to remedy this in the near future.
 
 Please note that the project is really just getting started, so what you
 see here right now is very unstable and should be considered as under

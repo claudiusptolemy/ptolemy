@@ -21,3 +21,9 @@ This is part of a research project at Purdue. It is also hosted as a
 (https://purr.purdue.edu/projects/ptolemy/view 
 "Ptolemy Layer for Google Earth").
 
+Please note that the project is really just getting started, so what you
+see here right now is very unstable and should be considered as under
+construction. We are making it available early to collaborate within the
+project team but also to make our work in progress visible to anyone else
+who may share an interest.
+

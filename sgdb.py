@@ -5,6 +5,11 @@
 import os
 import csv
 import logging
+import pandas as pd
+
+PTOL_HOME = os.environ['PTOL_HOME']
+PTOL_CD = os.path.join(PTOL_HOME, 'Data', 'PtolCD')
+
 
 PTOL_HOME = os.environ['PTOL_HOME']
 DELIMITER = '\t'
@@ -16,14 +21,14 @@ SGDB_TABLE_TRANSLATE = {
     'Realities': 'Realien'
 }
 
-PLACES_FIELDNAMES = [
+PLACE_FIELDNAMES = [
     'ptol_name',
     'ptol_id',
     'modern_name',
     'category_id',
     'ptol_lat_dms',
     'ptol_lon_dms',
-    'category',
+    'category_id_string',
     'map_id',
     'empty1',
     'empty2',
@@ -51,8 +56,14 @@ PLACES_FIELDNAMES = [
     'time_diff_diff',
     'longest_day_diff']
 
+CATEGORY_FIELDNAMES = [
+    'category_id',
+    'category_id_string',
+    'category_name']
+
+
 class Place(object):
-    __slots__ = PLACES_FIELDNAMES
+    __slots__ = PLACE_FIELDNAMES
     def __init__(self, d):
         for k, v in d.items():
             setattr(self, k, v)
@@ -74,7 +85,7 @@ def load_places():
     filename = get_filename('Places')
     logging.debug(filename)
     with open(filename, 'rb') as csvfile:
-        reader = csv.DictReader(csvfile, fieldnames=PLACES_FIELDNAMES,
+        reader = csv.DictReader(csvfile, fieldnames=PLACE_FIELDNAMES,
                                 delimiter=DELIMITER)
         return [Place(d) for d in reader]
 
@@ -93,3 +104,14 @@ def get_instance():
     return sgdb
 
 
+def read_tab(table, names, encoding):
+    filename = os.path.join(PTOL_CD, 'dat', '%s.tab' % table)
+    return pd.read_csv(filename, sep='\t', header=-1, names=names, encoding=encoding)
+
+def read_places():
+    return read_tab('Orte', PLACE_FIELDNAMES, 'cp1252')
+
+def read_categories():
+    filename = os.path.join(PTOL_CD, 'dat', 'Kategorien.tab')
+    return read_tab('Kategorien', CATEGORY_FIELDNAMES, 'cp850')
+                             

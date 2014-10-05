@@ -19,5 +19,21 @@ coordinates.
 This is part of a research project at Purdue. It is also hosted as a
 [project at Purdue University Research Repository (PURR)]
 (https://purr.purdue.edu/projects/ptolemy/view 
-"Ptolemy Layer for Google Earth").
+"Ptolemy Layer for Google Earth"). We are also building [a website
+for the project](http://www.claudiusptolemy.org/), but it's pretty bare 
+at the moment. We hope to remedy this in the near future.
+
+Please note that the project is really just getting started, so what you
+see here right now is very unstable and should be considered as under
+construction. We are making it available early to collaborate within the
+project team but also to make our work in progress visible to anyone else
+who may share an interest.
+
+Also, note that most of the scripts reference data files that are not 
+yet releasable. This will be remedied as soon as possible where possible.
+We are primarily using McCrindle's Ancient India as Described by Ptolemy
+and Stuckelberger and Grasshoff. The latter in particular comes with a 
+database we are relying on heavily to prime our initial model. We are also
+looking at Stevenson to a degree, but realize it comes with problems. If 
+you need help on this in the meantime please contact me.
 

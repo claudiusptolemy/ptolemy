@@ -36,5 +36,5 @@ and Stuckelberger and Grasshoff. The latter in particular comes with a
 database we are relying on heavily to prime our initial model. We are also
 looking at Stevenson to a degree, but realize it comes with problems. If 
 you need help on this in the meantime please [contact me]
-(mailto:Corey Abshire <dabshire@purdue.edu>).
+(mailto:dabshire@purdue.edu).
 

@@ -1,9 +1,13 @@
-# triangulate.py
+# basis.py
 # This file is part of the Ptolemy Layer for Google Earth project.
 # It implements a method to compute unknown coordinates from known
 # modern coordinates for locations given in Ptolemy. It is currently
 # focused on book 7 (India region), but can and will be extended
-# to other regions.
+# to other regions. 
+# 
+# This particular program works by viewing the nearest three known
+# neighbors as a basis for each unknown, and then doing a change of
+# basis to the modern coordinates for those three known places.
 
 import os
 import sys

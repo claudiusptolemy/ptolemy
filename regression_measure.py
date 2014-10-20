@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 from sklearn import linear_model
 from sklearn.cross_validation import LeaveOneOut
+from geopy.distance import vincenty
 
 import sgdb
 import geocode
@@ -52,6 +53,18 @@ for train, test in loo:
     latreg.fit(trainx, known.iloc[train, :].modern_lat)
     known.loc[known.iloc[test,:].index, 'pred_lat'] = latreg.predict(testx)
     known.loc[known.iloc[test,:].index, 'pred_lon'] = lonreg.predict(testx)
+
+for i, p in known.iterrows():
+    lat_err = p.modern_lat - p.pred_lat
+    lon_err = p.modern_lon - p.pred_lon
+    sq_err = lat_err ** 2 + lon_err ** 2
+    modern_coords = (p.modern_lat, p.modern_lon)
+    pred_coords = (p.pred_lat, p.pred_lon)
+    dist_err = vincenty(modern_coords, pred_coords).miles
+    known.loc[i, 'lat_err'] = lat_err
+    known.loc[i, 'lon_err'] = lon_err
+    known.loc[i, 'sq_err'] = sq_err
+    known.loc[i, 'dist_err'] = dist_err
 
 known.to_csv('../Data/regression_measure.csv', encoding='cp1252')
 

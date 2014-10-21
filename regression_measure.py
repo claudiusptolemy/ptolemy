@@ -31,7 +31,9 @@ X_NAMES = [
     'ptol_lat',
     'ptol_lon']
 
-TARGET_BOOK = '7' # book 7 contains India
+# book 7 contains India
+# chapter 1 is within the Ganges
+TARGET_BOOK = '7.01' 
 
 places = sgdb.read_places().drop_duplicates('ptol_id')
 places.reindex(columns=['ptol_id'])

@@ -45,7 +45,9 @@ def split_places(places):
     """Split places into known and unknown places."""
     known = places.loc[pd.notnull(places.modern_lat), :]
     unknown = places.loc[pd.isnull(places.modern_lat), :]
-    unknown.is_copy = False # prevent warning below that it's a copy of places
+    # prevent warning below that it's a copy of places
+    known.is_copy = False
+    unknown.is_copy = False 
     return known, unknown
 
 def report_places(places):

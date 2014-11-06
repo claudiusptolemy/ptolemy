@@ -33,8 +33,9 @@ TARGET_BOOK = '7.01'
 
 def read_places():
     """Read places for this script."""
-    places = sgdb.read_places().drop_duplicates('ptol_id')
+    places = sgdb.read_places()
     places = places.loc[pd.notnull(places.ptol_lat), :]
+    places = places.drop_duplicates('ptol_id')
     places = places.loc[:, KEY_PLACE_FIELDNAMES]
     places = places.loc[places.ptol_id.str.startswith(TARGET_BOOK), :]
     places = pd.merge(places, geocode.read_geocodes(), how='left')

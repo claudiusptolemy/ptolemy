@@ -104,7 +104,7 @@ def main(filename):
     #unknown = unknown.ix[range(5), :]
     derive_unknown_modern_coords(known, unknown)
     common.write_kml_file(filename, None, known, unknown)
-    unknown.to_csv('../Data/unknown.csv', encoding='cp1252')
+    common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
 
 if __name__ == '__main__':
     filename = sys.argv[1]

@@ -48,6 +48,9 @@ def split_places(places):
     # prevent warning below that it's a copy of places
     known.is_copy = False
     unknown.is_copy = False 
+    # add disposition column (known vs. unknown)
+    known.loc[:, 'disposition'] = 'known'
+    unknown.loc[:, 'disposition'] = 'unknown'
     return known, unknown
 
 def report_places(places):
@@ -103,6 +106,23 @@ def write_three_lines(kml, places, source_prefix, dest_suffix, color):
             coords = [(source_lon,source_lat), (dest_lon,dest_lat)]
             write_line(kml, coords, color)
 
+def write_csv_file(filename, known, unknown):
+    """Write out a csv file to filename containing all places listed in
+    known and unknown. Those to dataframes are merged and sorted by ptol_id
+    prior to being written."""
+    places = unknown.append(known, True, False)
+    places.sort('ptol_id', inplace=True)
+    cols = [
+        'ptol_id',
+        'ptol_name',
+        'modern_name',
+        'disposition',
+        'ptol_lat',
+        'ptol_lon',
+        'modern_lat',
+        'modern_lon']
+    places.to_csv(filename, index=False, encoding='cp1252', columns=cols)
+
 def write_kml_file(filename, tri, known, unknown):
     """Write the KML file for the triangulation."""
     kml = simplekml.Kml()
@@ -111,7 +131,7 @@ def write_kml_file(filename, tri, known, unknown):
     if tri:
         write_lines(kml, tri, known, 'ptol_lon', 'ptol_lat', 'ff0000ff')
         write_lines(kml, tri, known, 'modern_lon', 'modern_lat', 'ff00ffff')
-    else:
+    elif 'ax_lon' in unknown:
         write_three_lines(kml, unknown, 'ptol', 'x', '660099ff')
         write_three_lines(kml, unknown, 'modern', 'y', '6600ff00')
     write_points(kml, unknown, 'ptol_id', 'ptol_lon', 'ptol_lat', 'ff0099ff')

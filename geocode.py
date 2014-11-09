@@ -49,6 +49,6 @@ def read_geocodes():
             geo = get_geocoding(ptol_id)
             if geo.good:
                 places.append(geo.to_panda_dict_row())
-        except ValueError:
-            pass
+        except ValueError as e:
+            print ptol_id, e
     return pd.DataFrame(places)

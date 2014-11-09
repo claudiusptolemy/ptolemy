@@ -29,6 +29,7 @@ KEY_PLACE_FIELDNAMES = [
 
 # book 7 contains India
 # chapter 1 is within the Ganges
+# chapter 4 is Sri Lanka (mostly)
 TARGET_BOOK = '7.01'
 
 def read_places():
@@ -63,7 +64,6 @@ def report_simplices(tri, points):
     print tri.simplices
     for s in tri.simplices:
         print [(lat, lon) for (lat, lon) in [points.ix[p] for p in s]]
-
 
 def write_points(kml, places, name_col, lon_col, lat_col, color):
     """Write a series of placemarks into kml from places, using the name,

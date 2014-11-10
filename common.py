@@ -8,11 +8,11 @@ import sys
 import math
 import logging
 
-import simplekml
 import numpy as np
 import pandas as pd
 from geopy.distance import vincenty
 from scipy.spatial import Delaunay
+from pykml.factory import KML_ElementMaker as KML
 
 import sgdb
 import geocode
@@ -70,8 +70,17 @@ def write_points(kml, places, name_col, lon_col, lat_col, color):
     lon and lat columns specified by the corresponding col parameters, and
     using the specified color."""
     for i, r in places.iterrows():
-        p = kml.newpoint(name=r[name_col], coords=[(r[lon_col], r[lat_col])])
-        p.style.iconstyle.color = color
+        placemark_id = 'placemark_%s' % r[name_col]
+        point_id = 'point_%s' % r[name_col]
+        kml.write('''
+        <Placemark id="%s">
+            <name>%s</name>
+            <styleUrl>#%s_point</styleUrl>
+            <Point id="%s">
+                <coordinates>%s,%s,0.0</coordinates>
+            </Point>
+        </Placemark>
+''' % (placemark_id, r[name_col], color, point_id, r[lon_col], r[lat_col]))
 
 def write_lines(kml, tri, places, lon_col, lat_col, color):
     """Write a line for each simplex in tri, each of which refers to
@@ -121,20 +130,102 @@ def write_csv_file(filename, known, unknown):
         'ptol_lat',
         'ptol_lon',
         'modern_lat',
-        'modern_lon']
+        'modern_lon',
+        'original_lat',
+        'original_lon']
     places.to_csv(filename, index=False, encoding='cp1252', columns=cols)
+
+def write_styles(kml):
+    kml.write('''
+        <Style id="red_point">
+            <IconStyle id="substyle_0">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="link_0">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="yellow_point">
+            <IconStyle id="substyle_0">
+                <color>ff00ffff</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="link_0">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>
+        <Style id="red_line">
+            <LineStyle id="substyle_120">
+                <color>ff0000ff</color>
+                <colorMode>normal</colorMode>
+                <width>5</width>
+            </LineStyle>
+        </Style>''')
+
 
 def write_kml_file(filename, tri, known, unknown):
     """Write the KML file for the triangulation."""
-    kml = simplekml.Kml()
-    write_points(kml, known, 'ptol_id', 'ptol_lon', 'ptol_lat', 'ff0000ff')
-    write_points(kml, known, 'ptol_id', 'modern_lon', 'modern_lat', 'ff00ffff')
-    if tri:
-        write_lines(kml, tri, known, 'ptol_lon', 'ptol_lat', 'ff0000ff')
-        write_lines(kml, tri, known, 'modern_lon', 'modern_lat', 'ff00ffff')
-    elif 'ax_lon' in unknown:
-        write_three_lines(kml, unknown, 'ptol', 'x', '660099ff')
-        write_three_lines(kml, unknown, 'modern', 'y', '6600ff00')
-    write_points(kml, unknown, 'ptol_id', 'ptol_lon', 'ptol_lat', 'ff0099ff')
-    write_points(kml, unknown, 'ptol_id', 'modern_lon', 'modern_lat', 'ff00ff00')
-    kml.save(filename)
+    with open(filename, 'w') as kml:
+        kml.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+        kml.write('<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">\n')
+        kml.write('<Document id="ptolemy-7.01">\n')
+        write_styles(kml)
+    
+        write_points(kml, known, 'ptol_id', 'ptol_lon', 'ptol_lat', 'yellow')
+        write_points(kml, known, 'ptol_id', 'modern_lon', 'modern_lat', 'yellow')
+        #if tri:
+        #    write_lines(kml, tri, known, 'ptol_lon', 'ptol_lat', 'ff0000ff')
+        #    write_lines(kml, tri, known, 'modern_lon', 'modern_lat', 'ff00ffff')
+        #elif 'ax_lon' in unknown:
+        #    write_three_lines(kml, unknown, 'ptol', 'x', '660099ff')
+        #    write_three_lines(kml, unknown, 'modern', 'y', '6600ff00')
+        write_points(kml, unknown, 'ptol_id', 'ptol_lon', 'ptol_lat', 'red')
+        write_points(kml, unknown, 'ptol_id', 'modern_lon', 'modern_lat', 'red')
+        kml.write('</Document>\n')
+        kml.write('</kml>\n')
+
+#        <Style id="stylesel_0">
+#            <IconStyle id="substyle_0">
+#                <color>ff0000ff</color>
+#                <colorMode>normal</colorMode>
+#                <scale>1</scale>
+#                <heading>0</heading>
+#                <Icon id="link_0">
+#                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+#                </Icon>
+#            </IconStyle>
+#        </Style>
+
+#        <Style id="stylesel_120">
+#            <LineStyle id="substyle_120">
+#                <color>ff0000ff</color>
+#                <colorMode>normal</colorMode>
+#                <width>5</width>
+#            </LineStyle>
+#        </Style>
+
+
+#        <Placemark id="feat_95">
+#            <name/>
+#            <description/>
+#            <styleUrl>#stylesel_93</styleUrl>
+#            <LineString id="geom_93">
+#                <coordinates>125.0,27.1666666667,0.0 127.0,20.5,0.0 124.0,18.0,0.0</coordinates>
+#                <tessellate>1</tessellate>
+#                <altitudeMode>clampToGround</altitudeMode>
+#            </LineString>
+#        </Placemark>
+
+#        <Placemark id="feat_316">
+#            <name>7.01.24.02</name>
+#            <styleUrl>#stylesel_314</styleUrl>
+#            <Point id="geom_314">
+#                <coordinates>143.0,24.0,0.0</coordinates>
+#            </Point>
+#        </Placemark>
+

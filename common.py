@@ -130,9 +130,9 @@ def write_csv_file(filename, known, unknown):
         'ptol_lat',
         'ptol_lon',
         'modern_lat',
-        'modern_lon',
-        'original_lat',
-        'original_lon']
+        'modern_lon']
+    if 'original_lat' in unknown.columns:
+        cols += ['original_lat', 'original_lon']
     places.to_csv(filename, index=False, encoding='cp1252', columns=cols)
 
 def write_styles(kml):

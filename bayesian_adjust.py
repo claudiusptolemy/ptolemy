@@ -88,7 +88,7 @@ class ImagePrior(object):
 
     def map_latlon(self, p):
         """Compute the MAP (maximum a-posteriori) point (i.e., the point
-        in the grid with the highest probability, and return the lat/lon
+        in the grid with the highest probability), and return the lat/lon
         coordinate pair it represents."""
         return self.grid_to_latlon(np.unravel_index(p.argmax(), p.shape))
 

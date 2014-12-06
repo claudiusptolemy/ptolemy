@@ -41,23 +41,32 @@ class Application(Frame):
     @property
     def longitude(self):
         return float(self.coords_entry.get().split(',')[1])
-        
-    def write_file(self):
-        with open('../Data/geocode/%s.json' % self.ptol_id, 'wb') as outfile:
-            data = {
-                "results" : [
-                    {
-                        "geometry" : {
-                            "location" : {
-                                "lat" : self.latitude,
-                                "lng" : self.longitude
-                            }
+    
+    @property
+    def filename(self):
+        return '../Data/geocode/%s.json' % self.ptol_id
+
+    @property
+    def results(self):
+        return {
+            "results" : [
+                {
+                    "geometry" : {
+                        "location" : {
+                            "lat" : self.latitude,
+                            "lng" : self.longitude
                         }
                     }
-                ],
-                "status" : "OK" }
-            json.dump(data, outfile, sort_keys=True,
+                }
+            ],
+            "status" : "OK"
+        }
+
+    def write_file(self):
+        with open(self.filename, 'wb') as outfile:
+            json.dump(self.results, outfile, sort_keys=True,
                       indent=4, separators=(',', ': '))
+            print 'wrote file: %s' % self.filename
 
     def __init__(self, master=None):
         Frame.__init__(self, master)

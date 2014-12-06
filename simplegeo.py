@@ -1,0 +1,69 @@
+# simplegeo.py
+# Part of the Ptolemy project. A simple GUI tool to help manually
+# geocoding the locations in the format we need. It writes out a 
+# JSON formatted file compatible with the Google Geocoding API format
+# for our purposes. The filename is based on the Ptolemy ID we've
+# adopted from Stuckelberg and Grasshoff. The coordinates are to be
+# comma separated lat, lng that Google Maps displays when you right
+# click on a map location and click "What's here?", enabling easy
+# copy and paste.
+
+import json
+
+from Tkinter import *
+
+class Application(Frame):
+
+    def createWidgets(self):
+        self.ptol_id_label = Label(self, text="Ptol ID")
+        self.ptol_id_label.grid(row=0, column=0, sticky=W)
+        self.ptol_id_entry = Entry(self, bd=1)
+        self.ptol_id_entry.grid(row=0, column=1)
+
+        self.coords_label = Label(self, text="Coords")
+        self.coords_label.grid(row=1, column=0, sticky=W)
+        self.coords_entry = Entry(self, bd=1)
+        self.coords_entry.grid(row=1, column=1)
+
+        self.write_button = Button(self)
+        self.write_button["text"] = "Write"
+        self.write_button["command"] =  self.write_file
+        self.write_button.grid(row=2, column=1)
+
+    @property
+    def ptol_id(self):
+        return self.ptol_id_entry.get()
+        
+    @property
+    def latitude(self):
+        return float(self.coords_entry.get().split(',')[0])
+        
+    @property
+    def longitude(self):
+        return float(self.coords_entry.get().split(',')[1])
+        
+    def write_file(self):
+        with open('../Data/geocode/%s.json' % self.ptol_id, 'wb') as outfile:
+            data = {
+                "results" : [
+                    {
+                        "geometry" : {
+                            "location" : {
+                                "lat" : self.latitude,
+                                "lng" : self.longitude
+                            }
+                        }
+                    }
+                ],
+                "status" : "OK" }
+            json.dump(data, outfile, sort_keys=True,
+                      indent=4, separators=(',', ': '))
+
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.createWidgets()
+        self.pack()
+
+root = Tk()
+app = Application(master=root)
+app.mainloop()

@@ -101,14 +101,15 @@ def write_line(kml, a, b, color):
             </LineString>
         </Placemark>\n''' % (color, a[1], a[0], b[1], b[0]))
 
-def write_point(kml, color, p):
+def write_point(kml, color, p, label=''):
     kml.write('''
         <Placemark>
+            <name>%s</name>
             <styleUrl>#%s_point</styleUrl>
             <Point>
                 <coordinates>%s,%s,0.0</coordinates>
             </Point>
-        </Placemark>''' % (color, p[1], p[0]))
+        </Placemark>''' % (label, color, p[1], p[0]))
 
 def write_three_lines(kml, places, source_prefix, dest_suffix, color):
     source_lon_col = source_prefix + '_lon'
@@ -144,7 +145,6 @@ def write_csv_file(filename, known, unknown):
         cols += ['original_lat', 'original_lon']
     places.to_csv(filename, index=False, encoding='cp1252', columns=cols)
 
-
 def write_point_style(kml, color_name, color_code):
     kml.write('''
         <Style id="%s_point">
@@ -169,7 +169,7 @@ def write_line_style(kml, color_name, color_code):
             </LineStyle>
         </Style>\n'''  % (color_name, color_code))
 
-def write_styles(kml, A='55'):
+def write_styles(kml, A='ff'):
     colors = [('red',    A+'0000ff'),
               ('orange', A+'0099ff'),
               ('yellow', A+'00ffff'),

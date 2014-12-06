@@ -40,16 +40,18 @@ def write_neighbor_visualization_kml(known, k=6, verbose=False):
             kml.write('      <name>%s</name>\n' % (known.ix[i].ptol_id, ))
             ax = known.ix[i, XCOLS].values
             ay = known.ix[i, YCOLS].values
-            common.write_point(kml, 'red', ax)
-            common.write_point(kml, 'red', ay)
+            alabel = known.ix[i].ptol_id
+            common.write_point(kml, 'red', ax, alabel)
+            common.write_point(kml, 'red', ay, alabel)
             if verbose: print known.ix[i].ptol_id, ax, ay
             points = [indices[i,j] for j in range(1, k)]
             for m in range(len(points)):
                 j = points[m]
                 bx = known.ix[j, XCOLS].values
                 by = known.ix[j, YCOLS].values
-                common.write_point(kml, 'yellow', bx)
-                common.write_point(kml, 'yellow', by)
+                blabel = known.ix[j].ptol_id
+                common.write_point(kml, 'yellow', bx, blabel)
+                common.write_point(kml, 'yellow', by, blabel)
                 common.write_line(kml, ax, bx, colors[m])
                 common.write_line(kml, ay, by, colors[m])
                 if verbose: print '  ', known.ix[j].ptol_id, bx, by

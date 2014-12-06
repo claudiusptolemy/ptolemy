@@ -82,24 +82,33 @@ def write_points(kml, places, name_col, lon_col, lat_col, color):
         </Placemark>
 ''' % (placemark_id, r[name_col], color, point_id, r[lon_col], r[lat_col]))
 
-def write_lines(kml, tri, places, lon_col, lat_col, color):
+def write_line(kml, a, b, color):
     """Write a line for each simplex in tri, each of which refers to
     a point in places by index, using the lat, lon columns specified and
     in the specified color."""
-    for s in tri.simplices:
-        coords = [(p[lon_col], p[lat_col]) for p in [places.ix[p] for p in s]]
-        ls = kml.newlinestring(name="", description="", coords=coords)
-        ls.tessellate = 1
-        ls.altitudemode = simplekml.AltitudeMode.clamptoground
-        ls.style.linestyle.width = 5
-        ls.style.linestyle.color = color
+    kml.write('''
+        <Placemark>
+            <name></name>
+            <styleUrl>#%s_line</styleUrl>
+            <LineString>
+                <extrude>0</extrude>
+                <tessellate>1</tessellate>
+                <altitudeMode>clampToGround</altitudeMode>
+                <coordinates>
+                     %f,%f,0
+                     %f,%f,0
+                </coordinates>
+            </LineString>
+        </Placemark>\n''' % (color, a[1], a[0], b[1], b[0]))
 
-def write_line(kml, coords, color):
-    ls = kml.newlinestring(name="", description="", coords=coords)
-    ls.tessellate = 1
-    ls.altitudemode = simplekml.AltitudeMode.clamptoground
-    ls.style.linestyle.width = 1
-    ls.style.linestyle.color = color
+def write_point(kml, color, p):
+    kml.write('''
+        <Placemark>
+            <styleUrl>#%s_point</styleUrl>
+            <Point>
+                <coordinates>%s,%s,0.0</coordinates>
+            </Point>
+        </Placemark>''' % (color, p[1], p[0]))
 
 def write_three_lines(kml, places, source_prefix, dest_suffix, color):
     source_lon_col = source_prefix + '_lon'
@@ -135,38 +144,41 @@ def write_csv_file(filename, known, unknown):
         cols += ['original_lat', 'original_lon']
     places.to_csv(filename, index=False, encoding='cp1252', columns=cols)
 
-def write_styles(kml):
-    kml.write('''
-        <Style id="red_point">
-            <IconStyle id="substyle_0">
-                <color>ff0000ff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="link_0">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="yellow_point">
-            <IconStyle id="substyle_0">
-                <color>ff00ffff</color>
-                <colorMode>normal</colorMode>
-                <scale>1</scale>
-                <heading>0</heading>
-                <Icon id="link_0">
-                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
-                </Icon>
-            </IconStyle>
-        </Style>
-        <Style id="red_line">
-            <LineStyle id="substyle_120">
-                <color>ff0000ff</color>
-                <colorMode>normal</colorMode>
-                <width>5</width>
-            </LineStyle>
-        </Style>''')
 
+def write_point_style(kml, color_name, color_code):
+    kml.write('''
+        <Style id="%s_point">
+            <IconStyle id="substyle_0">
+                <color>%s</color>
+                <colorMode>normal</colorMode>
+                <scale>1</scale>
+                <heading>0</heading>
+                <Icon id="link_0">
+                    <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
+                </Icon>
+            </IconStyle>
+        </Style>\n''' % (color_name, color_code))
+
+def write_line_style(kml, color_name, color_code):
+    kml.write('''
+        <Style id="%s_line">
+            <LineStyle id="substyle_120">
+                <color>%s</color>
+                <colorMode>normal</colorMode>
+                <width>2</width>
+            </LineStyle>
+        </Style>\n'''  % (color_name, color_code))
+
+def write_styles(kml, A='55'):
+    colors = [('red',    A+'0000ff'),
+              ('orange', A+'0099ff'),
+              ('yellow', A+'00ffff'),
+              ('green',  A+'00ff00'),
+              ('cyan',   A+'ffff00'),
+              ('purple', A+'ff00ff')]
+    for name, code in colors:
+        write_point_style(kml, name, code)
+        write_line_style(kml, name, code)
 
 def write_kml_file(filename, tri, known, unknown):
     """Write the KML file for the triangulation."""

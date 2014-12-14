@@ -32,7 +32,7 @@ class Application(Frame):
 
     @property
     def ptol_id(self):
-        return self.ptol_id_entry.get()
+        return self.ptol_id_entry.get().strip()
         
     @property
     def latitude(self):

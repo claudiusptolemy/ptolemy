@@ -9,6 +9,7 @@ import os
 import sys
 import math
 import logging
+from math import *
 
 import simplekml
 import numpy as np
@@ -20,29 +21,32 @@ import sgdb
 import geocode
 import common
 
+X_NAMES = ['ptol_lat', 'ptol_lon']
+Y_NAMES = ['modern_lat', 'modern_lon']
+
 def mgc_distance(a, b, gamma=0.95):
     """Return the modified greatest circle distance based on the radian
     latitude and longitude coordinates a and b in terms of radians, adjusted
     by gamma."""
-    return 2.0 * math.asin(min(1, math.sqrt(math.sin(abs(a[0] - b[0])/2.0) ** 2 +
-                                            math.cos(a[0]) * math.cos(b[0]) *
-                                  math.sin((gamma*abs(a[1] - b[1]))/2.0) ** 2)))
+    return 2.0 * asin(min(1, sqrt(sin(abs(a[0] - b[0])/2.0) ** 2 +
+                                  cos(a[0]) * cos(b[0]) *
+                                  sin((gamma*abs(a[1] - b[1]))/2.0) ** 2)))
 
 def sphere_tri_area(x):
     """Compute the area of the triangle defined by the three radian
     latitude and longitude coordinate pairs given by x."""
     s = sum(x) / 2.0
-    return 4.0 * math.atan(math.sqrt(math.tan(s / 2.0) *
-                                     math.tan((s - x[0]) / 2.0) *
-                                     math.tan((s - x[1]) / 2.0) *
-                                     math.tan((s - x[2]) / 2.0)))
+    return 4.0 * atan(sqrt(tan(s / 2.0) *
+                           tan((s - x[0]) / 2.0) *
+                           tan((s - x[1]) / 2.0) *
+                           tan((s - x[2]) / 2.0)))
 
 def weights(a, b, c, m):
-    """Compute the weights to use for the three latitude and longitude coordinate
-    pairs for a, b, and c, to find the coordinate pair m. This can then be used
-    to compute a new coordinate pair for m based on alternative coordinates for
-    a, b, and c."""
-    a, b, c, m = ((math.radians(lat), math.radians(lon)) for (lat, lon) in (a, b, c, m))
+    """Compute the weights to use for the three latitude and longitude
+    coordinate pairs for a, b, and c, to find the coordinate pair
+    m. This can then be used to compute a new coordinate pair for m
+    based on alternative coordinates for a, b, and c. """
+    a, b, c, m = ((radians(lat), radians(lon)) for (lat, lon) in (a, b, c, m))
     ab, bc, ca = (mgc_distance(x,y) for (x,y) in ((a,b), (b,c), (c,a)))
     ma, mb, mc = (mgc_distance(x,y) for (x,y) in ((m,a), (m,b), (m,c)))
     ta, tb, tc = ((mb,mc,bc), (ma,mc,ca), (ma,mb,ab))
@@ -56,30 +60,42 @@ def new_point(x, w):
     return (sum(w[i] * x[i][0] for i in range(3)),
             sum(w[i] * x[i][1] for i in range(3)))
 
-def derive_unknown_modern_coords(tri, known, unknown):
-    """Compute unknown modern coordinates from known ones using the
-    given triangulation."""
-    simps = tri.find_simplex(unknown.loc[:, ['ptol_lat','ptol_lon']])
-    for i in range(len(simps)):
-        s = simps[i]
-        simp = tri.simplices[s]
-        if s > -1:
-            p = unknown.ix[i]
-            ap, bp, cp = tuple((known.ix[x].ptol_lat, known.ix[x].ptol_lon) for x in simp)
-            am, bm, cm = tuple((known.ix[x].modern_lat, known.ix[x].modern_lon) for x in simp)
-            mp = (p.ptol_lat, p.ptol_lon)
-            w = weights(ap, bp, cp, mp)
-            mm = new_point((am, bm, cm), w)
-            unknown.loc[p.ptol_id, 'modern_lat'] = mm[0]
-            unknown.loc[p.ptol_id, 'modern_lon'] = mm[1]
+class Triangulation(object):
+
+    def __init__(self):
+        pass
+
+    def fit(self, X, y):
+        self.trainX = X
+        self.trainy = y
+        self.tri = Delaunay(X, furthest_site=False)
+
+    def predict(self, X):
+        simps = self.tri.find_simplex(X)
+        y = np.zeros((len(simps),2))
+        for i in range(len(simps)):
+            s = simps[i]
+            simp = self.tri.simplices[s]
+            if s > -1:
+                p = X.iloc[0,:]
+                ap, bp, cp = tuple(tuple(self.trainX.iloc[j]) for j in simp)
+                am, bm, cm = tuple(tuple(self.trainy.iloc[j]) for j in simp)
+                mp = tuple(p)
+                w = weights(ap, bp, cp, mp)
+                y[i,:] = new_point((am, bm, cm), w)
+        return y
 
 def main(filename):
     places = common.read_places()
     known, unknown = common.split_places(places)
-    points = known.loc[:, ['ptol_lat','ptol_lon']]
-    tri = Delaunay(points, furthest_site=False)
-    derive_unknown_modern_coords(tri, known, unknown)
-    common.write_kml_file(filename, tri, known, unknown)
+    knownX = known.loc[:, X_NAMES]
+    knownY = known.loc[:, Y_NAMES]
+    unknownX = unknown.loc[:, X_NAMES]
+    model = Triangulation()
+    model.fit(knownX, knownY)
+    unknownY = model.predict(unknownX)
+    unknown.loc[:,Y_NAMES] = unknownY
+    common.write_kml_file(filename, model.tri, known, unknown)
     common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
 
 if __name__ == '__main__':

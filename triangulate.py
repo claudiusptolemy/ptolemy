@@ -21,8 +21,8 @@ import sgdb
 import geocode
 import common
 
-X_NAMES = ['ptol_lat', 'ptol_lon']
-Y_NAMES = ['modern_lat', 'modern_lon']
+XCOLS = ['ptol_lat', 'ptol_lon']
+YCOLS = ['modern_lat', 'modern_lon']
 
 def mgc_distance(a, b, gamma=0.95):
     """Return the modified greatest circle distance based on the radian
@@ -88,13 +88,13 @@ class Triangulation(object):
 def main(filename):
     places = common.read_places()
     known, unknown = common.split_places(places)
-    knownX = known.loc[:, X_NAMES]
-    knownY = known.loc[:, Y_NAMES]
-    unknownX = unknown.loc[:, X_NAMES]
+    knownX = known.loc[:, XCOLS]
+    knownY = known.loc[:, YCOLS]
     model = Triangulation()
     model.fit(knownX, knownY)
+    unknownX = unknown.loc[:, XCOLS]
     unknownY = model.predict(unknownX)
-    unknown.loc[:,Y_NAMES] = unknownY
+    unknown.loc[:,YCOLS] = unknownY
     common.write_kml_file(filename, model.tri, known, unknown)
     common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
 

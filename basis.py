@@ -45,67 +45,49 @@ def change_basis(ax, bx, cx, tx, ay, by, cy):
     ty = ry + cy
     return ty
 
-def new_point(x, w):
-    """Compute a new latitude and longitude coordinate pair by combining the
-    three pairs in x according to the weights given in w."""
-    return (sum(w[i] * x[i][0] for i in range(3)),
-            sum(w[i] * x[i][1] for i in range(3)))
+class BasisModel(object):
+    
+    def __init__(self):
+        pass
 
-def append_debug_coords(unknown, i, ax, bx, cx, ay, by, cy):
-    """Put all the three closest points into the unknown row, both the ptolemy
-    coords (the x's) and the modern coords (the y's). This allows us to write 
-    them out in the KML and the CSV for troubleshooting."""
-    unknown.ix[i, 'ax_lat'] = ax[0]
-    unknown.ix[i, 'ax_lon'] = ax[1]
-    unknown.ix[i, 'bx_lat'] = bx[0]
-    unknown.ix[i, 'bx_lon'] = bx[1]
-    unknown.ix[i, 'cx_lat'] = cx[0]
-    unknown.ix[i, 'cx_lon'] = cx[1]
-    unknown.ix[i, 'ay_lat'] = ay[0]
-    unknown.ix[i, 'ay_lon'] = ay[1]
-    unknown.ix[i, 'by_lat'] = by[0]
-    unknown.ix[i, 'by_lon'] = by[1]
-    unknown.ix[i, 'cy_lat'] = cy[0]
-    unknown.ix[i, 'cy_lon'] = cy[1]
+    def fit(self, X, y):
+        self.trainX = X
+        self.trainY = y
+        self.neighbors = NearestNeighbors(n_neighbors=3).fit(X)
 
-def derive_unknown_modern_coords(known, unknown):
-    """Compute unknown modern coordinates from known ones using the
-    given triangulation."""
-    X = known.loc[:, XCOLS]
-    Y = unknown.loc[:, XCOLS]
-    neighbors = NearestNeighbors(n_neighbors=3).fit(X)
-    distances, indices = neighbors.kneighbors(Y)
-    for i in range(len(unknown)):
-        ai, bi, ci = tuple(indices[i,j] for j in range(3))
-        ax = known.ix[ai, XCOLS].values
-        bx = known.ix[bi, XCOLS].values
-        cx = known.ix[ci, XCOLS].values
-        tx = unknown.ix[i, XCOLS].values
-        ay = known.ix[ai, YCOLS].values
-        by = known.ix[bi, YCOLS].values
-        cy = known.ix[ci, YCOLS].values
-        ty = change_basis(ax, bx, cx, tx, ay, by, cy)
-        unknown.ix[i, 'modern_lat'] = ty[0]
-        unknown.ix[i, 'modern_lon'] = ty[1]
-        append_debug_coords(unknown, i, ax, bx, cx, ay, by, cy)
-
-def find_neighbors(known, unknown):
-    """Find 3 neighbors of each unknown point in known."""
-    X = known.loc[:, XCOLS]
-    Y = unknown.loc[:, XCOLS]
-    neighbors = NearestNeighbors(n_neighbors=4, algorithm='ball_tree', metric='haversine').fit(X)
-    distances, indices = neighbors.kneighbors(Y)
-    print indices
-    print distances
+    def predict(self, X):
+        """Compute unknown modern coordinates from known ones using the
+        given triangulation."""
+        distances, indices = self.neighbors.kneighbors(X)
+        y = np.zeros((len(X),2))
+        for i in range(len(X)):
+            ai, bi, ci = tuple(indices[i,j] for j in range(3))
+            ax = self.trainX.iloc[ai].values
+            bx = self.trainX.iloc[bi].values
+            cx = self.trainX.iloc[ci].values
+            tx = X.iloc[i].values
+            ay = self.trainY.iloc[ai].values
+            by = self.trainY.iloc[bi].values
+            cy = self.trainY.iloc[ci].values
+            try:
+                y[i,:] = change_basis(ax, bx, cx, tx, ay, by, cy)
+            except linalg.LinAlgError as e:
+                print 'warning:%s:%s' % (i,e)
+        return y
 
 def main(filename):
     places = common.read_places()
     known, unknown = common.split_places(places)
-    #unknown = unknown.ix[range(5), :]
-    derive_unknown_modern_coords(known, unknown)
+    knownX = known.loc[:, XCOLS]
+    knownY = known.loc[:, YCOLS]
+    model = BasisModel()
+    model.fit(knownX, knownY)
+    unknownX = unknown.loc[:, XCOLS]
+    unknownY = model.predict(unknownX)
+    unknown.loc[:,YCOLS] = unknownY
     common.write_kml_file(filename, None, known, unknown)
     common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
-
+    
 if __name__ == '__main__':
     filename = sys.argv[1]
     main(filename)

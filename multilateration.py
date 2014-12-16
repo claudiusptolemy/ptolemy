@@ -57,54 +57,60 @@ def multilaterate(P, dists):
 def euclidean_distance(a, b):
     return math.sqrt(sum(math.pow(a[i] - b[i], 2) for i in range(len(a))))
 
-def derive_unknown_modern_coords(known, unknown):
-    """Compute unknown modern coordinates from known ones using the
-    given triangulation."""
-    X = known.loc[:, XCOLS]
-    Y = unknown.loc[:, XCOLS]
-    neighbors = NearestNeighbors(n_neighbors=3).fit(X)
-    distances, indices = neighbors.kneighbors(Y)
-    print len(unknown)
-    for i in range(len(unknown)):
-        print '-' * 60
-        ai, bi, ci = tuple(indices[i,j] for j in range(3))
-        ax = known.ix[ai, XCOLS].values
-        bx = known.ix[bi, XCOLS].values
-        cx = known.ix[ci, XCOLS].values
-        tx = unknown.ix[i, XCOLS].values
-        ay = known.ix[ai, YCOLS].values
-        by = known.ix[bi, YCOLS].values
-        cy = known.ix[ci, YCOLS].values
-        print [(c[0],c[1]) for c in [ax,bx,cx]]
-        P = [geodetic2ecef(c[0],c[1],0) for c in [ax,bx,cx]]
-        txecef = geodetic2ecef(tx[0],tx[1],0)
-        print P
-        Pd = [euclidean_distance(txecef, c) for c in P]
-        print Pd
-        ntxecef = multilaterate(P, Pd)
-        ntx = ecef2geodetic(ntxecef[0], ntxecef[1], ntxecef[2])
-        print ntx
-        print (tx[0],tx[1])
-        Q = [geodetic2ecef(c[0],c[1],0) for c in [ay,by,cy]]
-        #Qdscale = [euclidean_distance(ax, bx) / euclidean_distance(ay, by),
-        #           euclidean_distance(bx, cx) / euclidean_distance(by, cy),
-        #           euclidean_distance(cx, ax) / euclidean_distance(cy, ay)]
-        #print 'scale:', Qdscale
-        tyecef = multilaterate(Q, Pd)
-        ty = ecef2geodetic(tyecef[0], tyecef[1], tyecef[2])
-        print ty
-        unknown.ix[i, 'modern_lat'] = ty[0]
-        unknown.ix[i, 'modern_lon'] = ty[1]
-        #append_debug_coords(unknown, i, ax, bx, cx, ay, by, cy)
+class MultilaterationModel(object):
+
+    def __init__(self):
+        pass
+
+    def fit(self, X, y):
+        self.trainX = X
+        self.trainY = y
+        self.neighbors = NearestNeighbors(n_neighbors=3).fit(X)
+
+    def predict(self, X):
+        """Compute unknown modern coordinates from known ones using the
+        given triangulation."""
+        distances, indices = self.neighbors.kneighbors(X)
+        y = np.zeros((len(X),2))
+        print len(X)
+        for i in range(len(X)):
+            print '-' * 60
+            ai, bi, ci = tuple(indices[i,j] for j in range(3))
+            ax = self.trainX.iloc[ai].values
+            bx = self.trainX.iloc[bi].values
+            cx = self.trainX.iloc[ci].values
+            tx = X.iloc[i].values
+            ay = self.trainY.iloc[ai].values
+            by = self.trainY.iloc[bi].values
+            cy = self.trainY.iloc[ci].values
+            print [(c[0],c[1]) for c in [ax,bx,cx]]
+            P = [geodetic2ecef(c[0],c[1],0) for c in [ax,bx,cx]]
+            txecef = geodetic2ecef(tx[0],tx[1],0)
+            print P
+            Pd = [euclidean_distance(txecef, c) for c in P]
+            print Pd
+            ntxecef = multilaterate(P, Pd)
+            ntx = ecef2geodetic(ntxecef[0], ntxecef[1], ntxecef[2])
+            print ntx
+            print (tx[0],tx[1])
+            Q = [geodetic2ecef(c[0],c[1],0) for c in [ay,by,cy]]
+            tyecef = multilaterate(Q, Pd)
+            y[i,:] = ecef2geodetic(tyecef[0], tyecef[1], tyecef[2])
+            print y[i,:]
+        return y
 
 def main(filename):
     places = common.read_places()
     known, unknown = common.split_places(places)
-    #unknown = unknown.ix[range(5), :]
-    derive_unknown_modern_coords(known, unknown)
+    knownX = known.loc[:, XCOLS]
+    knownY = known.loc[:, YCOLS]
+    model = MultilaterationModel()
+    model.fit(knownX, knownY)
+    unknownX = unknown.loc[:, XCOLS]
+    unknownY = model.predict(unknownX)
+    unknown.loc[:,YCOLS] = unknownY
     common.write_kml_file(filename, None, known, unknown)
     common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
-
 
 if __name__ == '__main__':
     filename = sys.argv[1]

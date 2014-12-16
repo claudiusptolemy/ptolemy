@@ -18,6 +18,7 @@ import sgdb
 import geocode
 
 from triangulate import Triangulation
+from flocking import FlockingModel
 
 PTOL_HOME = os.environ['PTOL_HOME']
 logging.basicConfig(level='DEBUG')
@@ -45,14 +46,14 @@ places = places.loc[places.ptol_id.str.startswith(TARGET_BOOK), :]
 places = pd.merge(places, geocode.read_geocodes(), how='left')
 known = places.loc[pd.notnull(places.modern_lat), :]
 known.is_copy = False
-known.to_csv('../Data/regression_measure_before.csv', encoding='cp1252')
+#known.to_csv('../Data/regression_measure_before.csv', encoding='cp1252')
 
 loo = LeaveOneOut(len(known))
 for train, test in loo:
     trainx = known.iloc[train, :].loc[:, X_NAMES]
     trainy = known.iloc[train, :].loc[:, Y_NAMES]
     testx = known.iloc[test, :].loc[:, X_NAMES]
-    model = Triangulation()
+    model = FlockingModel()
     model.fit(trainx, trainy)
     testy = model.predict(testx)
     known.loc[known.iloc[test,:].index, 'pred_lat'] = testy[0][0]
@@ -70,5 +71,5 @@ for i, p in known.iterrows():
     known.loc[i, 'sq_err'] = sq_err
     known.loc[i, 'dist_err'] = dist_err
 
-known.to_csv('../Data/triangulate_measure.csv', encoding='cp1252')
+known.to_csv('../Data/flocking_measure.csv', encoding='cp1252')
 

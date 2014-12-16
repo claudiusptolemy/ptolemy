@@ -8,8 +8,8 @@ import sys
 
 import common
 
-XCOLS = ['ptol_lat','ptol_lon']
-YCOLS = ['modern_lat','modern_lon']
+XCOLS = ['ptol_%s' % s for s in ('lat', 'lon')]
+YCOLS = [s.replace('ptol', 'modern') for s in XCOLS]
 
 def main(filename, model):
     places = common.read_places()
@@ -23,13 +23,8 @@ def main(filename, model):
     common.write_kml_file(filename, None, known, unknown)
     common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
 
-def construct_model(modelname):
-    mname = modelname.lower()
-    cname = modelname.capitalize()
-    return getattr(__import__(mname, cname), cname)()
-
 if __name__ == '__main__':
     modelname = sys.argv[1]
-    model = construct_model(modelname)
+    model = common.construct_model(modelname)
     filename = os.path.join(common.PTOL_HOME, 'Data', '%s.kml' % modelname)
     main(filename, model)

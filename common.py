@@ -32,6 +32,11 @@ KEY_PLACE_FIELDNAMES = [
 # chapter 4 is Sri Lanka (mostly)
 TARGET_BOOK = '7.01'
 
+def construct_model(modelname):
+    mname = modelname.lower()
+    cname = modelname.capitalize()
+    return getattr(__import__(mname, cname), cname)()
+
 def read_places():
     """Read places for this script."""
     places = sgdb.read_places()

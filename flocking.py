@@ -7,25 +7,12 @@
 
 import os
 import sys
-import math
-import logging
 
-import simplekml
 import numpy as np
-import pandas as pd
-from geopy.distance import vincenty
-from scipy.spatial import Delaunay
 from sklearn.neighbors import NearestNeighbors
 from numpy import linalg
 
-import sgdb
-import geocode
-import common
-
-XCOLS = ['ptol_lat','ptol_lon']
-YCOLS = ['modern_lat','modern_lon']
-
-class FlockingModel(object):
+class Flocking(object):
 
     def __init__(self):
         self.k = 3
@@ -67,26 +54,8 @@ class FlockingModel(object):
         for i in range(len(X)):
             sum_dist = distances[i,:].sum()
             weights = distances[i,:] / sum_dist
-            vec_lat = sum(self.vec[indices[i,:],0] * weights)
-            vec_lon = sum(self.vec[indices[i,:],1] * weights)
-            y[i,0] = move[i,0] + vec_lat
-            y[i,1] = move[i,1] + vec_lon
+            for j in range(2):
+                vec = sum(self.vec[indices[i,:],j] * weights)
+                y[i,j] = move[i,j] + vec
 
         return y
-
-def main(filename):
-    places = common.read_places()
-    known, unknown = common.split_places(places)
-    knownX = known.loc[:, XCOLS]
-    knownY = known.loc[:, YCOLS]
-    model = FlockingModel()
-    model.fit(knownX, knownY)
-    unknownX = unknown.loc[:, XCOLS]
-    unknownY = model.predict(unknownX)
-    unknown.loc[:,YCOLS] = unknownY
-    common.write_kml_file(filename, None, known, unknown)
-    common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
-
-if __name__ == '__main__':
-    filename = sys.argv[1]
-    main(filename)

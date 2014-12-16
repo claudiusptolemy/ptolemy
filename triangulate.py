@@ -7,22 +7,10 @@
 
 import os
 import sys
-import math
-import logging
 from math import *
 
-import simplekml
 import numpy as np
-import pandas as pd
-from geopy.distance import vincenty
 from scipy.spatial import Delaunay
-
-import sgdb
-import geocode
-import common
-
-XCOLS = ['ptol_lat', 'ptol_lon']
-YCOLS = ['modern_lat', 'modern_lon']
 
 def mgc_distance(a, b, gamma=0.95):
     """Return the modified greatest circle distance based on the radian
@@ -60,10 +48,7 @@ def new_point(x, w):
     return (sum(w[i] * x[i][0] for i in range(3)),
             sum(w[i] * x[i][1] for i in range(3)))
 
-class Triangulation(object):
-
-    def __init__(self):
-        pass
+class Triangulate(object):
 
     def fit(self, X, y):
         self.trainX = X
@@ -84,20 +69,3 @@ class Triangulation(object):
                 w = weights(ap, bp, cp, mp)
                 y[i,:] = new_point((am, bm, cm), w)
         return y
-
-def main(filename):
-    places = common.read_places()
-    known, unknown = common.split_places(places)
-    knownX = known.loc[:, XCOLS]
-    knownY = known.loc[:, YCOLS]
-    model = Triangulation()
-    model.fit(knownX, knownY)
-    unknownX = unknown.loc[:, XCOLS]
-    unknownY = model.predict(unknownX)
-    unknown.loc[:,YCOLS] = unknownY
-    common.write_kml_file(filename, model.tri, known, unknown)
-    common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
-
-if __name__ == '__main__':
-    filename = sys.argv[1]
-    main(filename)

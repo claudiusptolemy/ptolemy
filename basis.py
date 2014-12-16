@@ -9,25 +9,9 @@
 # neighbors as a basis for each unknown, and then doing a change of
 # basis to the modern coordinates for those three known places.
 
-import os
-import sys
-import math
-import logging
-
-import simplekml
 import numpy as np
-import pandas as pd
-from geopy.distance import vincenty
-from scipy.spatial import Delaunay
 from sklearn.neighbors import NearestNeighbors
 from numpy import linalg
-
-import sgdb
-import geocode
-import common
-
-XCOLS = ['ptol_lat','ptol_lon']
-YCOLS = ['modern_lat','modern_lon']
 
 def change_basis(ax, bx, cx, tx, ay, by, cy):
     """Find the position ty based on basis formed by vectors ay, by and
@@ -45,11 +29,8 @@ def change_basis(ax, bx, cx, tx, ay, by, cy):
     ty = ry + cy
     return ty
 
-class BasisModel(object):
+class Basis(object):
     
-    def __init__(self):
-        pass
-
     def fit(self, X, y):
         self.trainX = X
         self.trainY = y
@@ -74,20 +55,3 @@ class BasisModel(object):
             except linalg.LinAlgError as e:
                 print 'warning:%s:%s' % (i,e)
         return y
-
-def main(filename):
-    places = common.read_places()
-    known, unknown = common.split_places(places)
-    knownX = known.loc[:, XCOLS]
-    knownY = known.loc[:, YCOLS]
-    model = BasisModel()
-    model.fit(knownX, knownY)
-    unknownX = unknown.loc[:, XCOLS]
-    unknownY = model.predict(unknownX)
-    unknown.loc[:,YCOLS] = unknownY
-    common.write_kml_file(filename, None, known, unknown)
-    common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
-    
-if __name__ == '__main__':
-    filename = sys.argv[1]
-    main(filename)

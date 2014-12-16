@@ -10,25 +10,14 @@
 
 import os
 import sys
-import math
-import logging
+from math import *
 
 import simplekml
 import numpy as np
-import pandas as pd
-from geopy.distance import vincenty
-from scipy.spatial import Delaunay
 from sklearn.neighbors import NearestNeighbors
 from numpy import linalg
 
-import sgdb
-import geocode
-import common
-
 from pysatsnip import geodetic2ecef, ecef2geodetic
-
-XCOLS = ['ptol_lat','ptol_lon']
-YCOLS = ['modern_lat','modern_lon']
 
 # adapted from an algorithm listed here:
 # http://stackoverflow.com/questions/8318113/multilateration-of-gps-coordinates
@@ -42,9 +31,9 @@ def multilaterate(P, dists):
         Am = -2*x
         Bm = -2*y
         Cm = -2*z
-        Dm = R*R + (math.pow(x,2) +
-                    math.pow(y,2) +
-                    math.pow(z,2)) - math.pow(dists[m],2)
+        Dm = R*R + (pow(x,2) +
+                    pow(y,2) +
+                    pow(z,2)) - pow(dists[m],2)
         A += [[Am,Bm,Cm,Dm]]
     # Solve using SVD
     A = np.array(A)
@@ -55,12 +44,9 @@ def multilaterate(P, dists):
     return w[:3]
 
 def euclidean_distance(a, b):
-    return math.sqrt(sum(math.pow(a[i] - b[i], 2) for i in range(len(a))))
+    return sqrt(sum(pow(a[i] - b[i], 2) for i in range(len(a))))
 
-class MultilaterationModel(object):
-
-    def __init__(self):
-        pass
+class Multilateration(object):
 
     def fit(self, X, y):
         self.trainX = X
@@ -72,9 +58,7 @@ class MultilaterationModel(object):
         given triangulation."""
         distances, indices = self.neighbors.kneighbors(X)
         y = np.zeros((len(X),2))
-        print len(X)
         for i in range(len(X)):
-            print '-' * 60
             ai, bi, ci = tuple(indices[i,j] for j in range(3))
             ax = self.trainX.iloc[ai].values
             bx = self.trainX.iloc[bi].values
@@ -83,35 +67,12 @@ class MultilaterationModel(object):
             ay = self.trainY.iloc[ai].values
             by = self.trainY.iloc[bi].values
             cy = self.trainY.iloc[ci].values
-            print [(c[0],c[1]) for c in [ax,bx,cx]]
             P = [geodetic2ecef(c[0],c[1],0) for c in [ax,bx,cx]]
             txecef = geodetic2ecef(tx[0],tx[1],0)
-            print P
             Pd = [euclidean_distance(txecef, c) for c in P]
-            print Pd
             ntxecef = multilaterate(P, Pd)
             ntx = ecef2geodetic(ntxecef[0], ntxecef[1], ntxecef[2])
-            print ntx
-            print (tx[0],tx[1])
             Q = [geodetic2ecef(c[0],c[1],0) for c in [ay,by,cy]]
             tyecef = multilaterate(Q, Pd)
             y[i,:] = ecef2geodetic(tyecef[0], tyecef[1], tyecef[2])
-            print y[i,:]
         return y
-
-def main(filename):
-    places = common.read_places()
-    known, unknown = common.split_places(places)
-    knownX = known.loc[:, XCOLS]
-    knownY = known.loc[:, YCOLS]
-    model = MultilaterationModel()
-    model.fit(knownX, knownY)
-    unknownX = unknown.loc[:, XCOLS]
-    unknownY = model.predict(unknownX)
-    unknown.loc[:,YCOLS] = unknownY
-    common.write_kml_file(filename, None, known, unknown)
-    common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
-
-if __name__ == '__main__':
-    filename = sys.argv[1]
-    main(filename)

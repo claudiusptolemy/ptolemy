@@ -62,7 +62,7 @@ class Triangulate(object):
             s = simps[i]
             simp = self.tri.simplices[s]
             if s > -1:
-                p = X.iloc[0,:]
+                p = X.iloc[i,:]
                 ap, bp, cp = tuple(tuple(self.trainX.iloc[j]) for j in simp)
                 am, bm, cm = tuple(tuple(self.trainy.iloc[j]) for j in simp)
                 mp = tuple(p)

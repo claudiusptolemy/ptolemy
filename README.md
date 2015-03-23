@@ -2,7 +2,7 @@ Ptolemy Layer for Google Earth (ptolemy)
 ========================================
 
 Claudius Ptolemy, a famous ancient Hellenic geographer and astronomer
-from Alexandria, Egypt, provided coordinates of 8000+ objects of the
+from Alexandria, Egypt, provided coordinates of 6000+ objects of the
 known world (oikoumen?) in his classical Geography [1] and
 supplemented them with many useful descriptions and names of tribes
 that lived nearby.  In essence, Ptolemy provided the earliest

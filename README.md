@@ -35,6 +35,8 @@ We are primarily using McCrindle's Ancient India as Described by Ptolemy
 and Stuckelberger and Grasshoff. The latter in particular comes with a 
 database we are relying on heavily to prime our initial model. We are also
 looking at Stevenson to a degree, but realize it comes with problems. If 
-you need help on this in the meantime please [contact me]
-(mailto:dabshire@purdue.edu).
+you need help on this in the meantime please
+[contact myself](mailto:dcabshir@indiana.edu),
+[Prof. Gusev](mailto:dgusev@purdue.edu), or
+[Prof. Papapanagiotou](mailto:ipapapan@purdue.edu].
 

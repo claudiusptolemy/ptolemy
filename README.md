@@ -32,7 +32,7 @@ who may share an interest.
 Our paper called 
 [A Mathematical Method for Visualizing Ptolemy’s India in 
 Modern GIS Tools](http://www.claudiusptolemy.org/AbshireGusevPapapanagiotouStafeyev_Corfu2015.pdf) 
-explains our initial work in this area and has been accepted to 
+explains our initial work in this area and has been accepted to the upcoming  
 [10th Jubilee Conference + Workshop "Digital Approaches to Cartographic Heritage](http://xeee.web.auth.gr/ICA-Heritage/Corfu_2015.htm) in Corfu, Greece. 
 
 Also, note that most of the scripts reference data files that are not 

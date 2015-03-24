@@ -29,6 +29,12 @@ construction. We are making it available early to collaborate within the
 project team but also to make our work in progress visible to anyone else
 who may share an interest.
 
+Our paper called 
+[A Mathematical Method for Visualizing Ptolemy’s India in 
+Modern GIS Tools](http://www.claudiusptolemy.org/AbshireGusevPapapanagiotouStafeyev_Corfu2015.pdf) 
+explains our initial work in this area and has been accepted to 
+[10th Jubilee Conference + Workshop "Digital Approaches to Cartographic Heritage](http://xeee.web.auth.gr/ICA-Heritage/Corfu_2015.htm) in Corfu, Greece. 
+
 Also, note that most of the scripts reference data files that are not 
 yet releasable. This will be remedied as soon as possible where possible.
 We are primarily using McCrindle's Ancient India as Described by Ptolemy

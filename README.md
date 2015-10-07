@@ -44,5 +44,5 @@ looking at Stevenson to a degree, but realize it comes with problems. If
 you need help on this in the meantime please
 [contact myself](mailto:dcabshir@indiana.edu),
 [Prof. Gusev](mailto:dgusev@purdue.edu), or
-[Prof. Papapanagiotou](mailto:ipapapan@purdue.edu).
+[Dr. Papapanagiotou](mailto:ipapapa@ncsu.edu).
 

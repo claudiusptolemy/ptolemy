@@ -12,7 +12,8 @@ import numpy as np
 import pandas as pd
 from geopy.distance import vincenty
 from scipy.spatial import Delaunay
-from pykml.factory import KML_ElementMaker as KML
+
+import xlrd
 
 import sgdb
 import geocode
@@ -37,14 +38,26 @@ def construct_model(modelname):
     cname = modelname.capitalize()
     return getattr(__import__(mname, cname), cname)()
 
-def read_places():
+def read_places(id_starts_with):
     """Read places for this script."""
     places = sgdb.read_places()
     places = places.loc[pd.notnull(places.ptol_lat), :]
     places = places.drop_duplicates('ptol_id')
     places = places.loc[:, KEY_PLACE_FIELDNAMES]
-    places = places.loc[places.ptol_id.str.startswith(TARGET_BOOK), :]
+    places = places.loc[places.ptol_id.str.startswith(id_starts_with), :]
     places = pd.merge(places, geocode.read_geocodes(), how='left')
+    places.set_index('ptol_id', False, False, True, True)
+    return places
+
+def read_places_xlsx(filename):
+    """Read a set of places from an Excel spreadsheet, formatted
+    the way we've adopted during this project."""
+    places = pd.read_excel(filename)
+    places = places.iloc[:,0:8]
+    places.columns = ['ptol_id','ptol_name','modern_name',
+                      'ptol_lat','ptol_lon','modern_lat','modern_lon',
+                      'disposition']
+    places = places.drop_duplicates('ptol_id')
     places.set_index('ptol_id', False, False, True, True)
     return places
 
@@ -136,7 +149,7 @@ def write_csv_file(filename, known, unknown):
     known and unknown. Those to dataframes are merged and sorted by ptol_id
     prior to being written."""
     places = unknown.append(known, True, False)
-    places.sort('ptol_id', inplace=True)
+    places.sort_values('ptol_id', inplace=True)
     cols = [
         'ptol_id',
         'ptol_name',
@@ -148,7 +161,7 @@ def write_csv_file(filename, known, unknown):
         'modern_lon']
     if 'original_lat' in unknown.columns:
         cols += ['original_lat', 'original_lon']
-    places.to_csv(filename, index=False, encoding='cp1252', columns=cols)
+    places.to_csv(filename, index=False, encoding='utf-8', columns=cols)
 
 def write_point_style(kml, color_name, color_code):
     kml.write('''

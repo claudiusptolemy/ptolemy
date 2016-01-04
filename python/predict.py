@@ -5,14 +5,14 @@
 
 import os
 import sys
+import argparse
 
 import common
 
 XCOLS = ['ptol_%s' % s for s in ('lat', 'lon')]
 YCOLS = [s.replace('ptol', 'modern') for s in XCOLS]
 
-def main(filename, model):
-    places = common.read_places()
+def main(filename, model, places):
     known, unknown = common.split_places(places)
     knownX = known.loc[:, XCOLS]
     knownY = known.loc[:, YCOLS]
@@ -24,7 +24,27 @@ def main(filename, model):
     common.write_csv_file(filename[0:-4]+'.csv', known, unknown)
 
 if __name__ == '__main__':
-    modelname = sys.argv[1]
-    model = common.construct_model(modelname)
-    filename = os.path.join(common.PTOL_HOME, 'Data', '%s.kml' % modelname)
-    main(filename, model)
+    parser = argparse.ArgumentParser(
+        description='Predict unknown Ptolemy places.')
+    parser.add_argument('--model', help='prediction model to use')
+    parser.add_argument('--sgdb', help='read from sgdb with given prefix')
+    parser.add_argument('--xlsx', help='xlsx to read from instead of sgdb')
+    parser.add_argument('--output', help='output filename')
+    
+    args = parser.parse_args()
+    model = common.construct_model(args.model)
+    
+    if args.sgdb:
+        places = common.read_places(args.sgdb)
+    elif args.xlsx:
+        places = common.read_places_xlsx(args.xlsx)
+    else: 
+        sys.stderr.write('must specify one of --sgdb or --xlsx')
+        exit(1)
+
+    if args.output:
+        output = args.output
+    else:
+        output = os.path.join(common.PTOL_HOME, 'Data', '%s.kml' % args.model)
+
+    main(output, model, places)

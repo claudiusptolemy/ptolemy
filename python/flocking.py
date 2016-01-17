@@ -47,13 +47,14 @@ class Flocking(object):
         move[:,0] = X.ix[:,0] - self.lat_off
         move[:,1] = X.ix[:,1] - self.lon_off
 
-        # computer the average vector for those knowns and use that as the
+        # compute the average vector for those knowns and use that as the
         # vector for the unknown apply that vector to the unknown and use
         # that as the prediction possibly: adjust the weights to be
         # quadratic on the dist to the neighbor
+        _, k = distances.shape
         for i in range(len(X)):
             sum_dist = distances[i,:].sum()
-            weights = distances[i,:] / sum_dist
+            weights = (sum_dist - distances[i,:]) / ((k-1) * sum_dist)
             for j in range(2):
                 vec = sum(self.vec[indices[i,:],j] * weights)
                 y[i,j] = move[i,j] + vec

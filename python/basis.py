@@ -13,6 +13,7 @@ import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from numpy import linalg
 
+
 def change_basis(ax, bx, cx, tx, ay, by, cy):
     """Find the position ty based on basis formed by vectors ay, by and
     ay, cy, by finding its coordinates using tx on the basis formed by
@@ -29,8 +30,14 @@ def change_basis(ax, bx, cx, tx, ay, by, cy):
     ty = ry + cy
     return ty
 
+
 class Basis(object):
-    
+
+    def __init__(self):
+        self.trainX = None
+        self.trainY = None
+        self.neighbors = None
+
     def fit(self, X, y):
         self.trainX = X
         self.trainY = y

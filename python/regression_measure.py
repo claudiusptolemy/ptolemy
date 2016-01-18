@@ -3,12 +3,8 @@
 # the places that have been suggested by other means.
 
 import os
-import csv
-import random
 import logging
 
-import simplekml
-import numpy as np
 import pandas as pd
 from sklearn import linear_model
 from sklearn.cross_validation import LeaveOneOut
@@ -53,8 +49,8 @@ for train, test in loo:
     latreg = linear_model.LinearRegression()
     lonreg.fit(trainx, known.iloc[train, :].modern_lon)
     latreg.fit(trainx, known.iloc[train, :].modern_lat)
-    known.loc[known.iloc[test,:].index, 'pred_lat'] = latreg.predict(testx)
-    known.loc[known.iloc[test,:].index, 'pred_lon'] = lonreg.predict(testx)
+    known.loc[known.iloc[test, :].index, 'pred_lat'] = latreg.predict(testx)
+    known.loc[known.iloc[test, :].index, 'pred_lon'] = lonreg.predict(testx)
 
 for i, p in known.iterrows():
     lat_err = p.modern_lat - p.pred_lat
@@ -69,4 +65,3 @@ for i, p in known.iterrows():
     known.loc[i, 'dist_err'] = dist_err
 
 known.to_csv('../Data/regression_measure.csv', encoding='cp1252')
-

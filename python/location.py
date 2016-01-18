@@ -1,5 +1,6 @@
 from string import Template
 
+
 class Location(object):
     """Represents a Ptolemaic location, containing both the Ptolemaic 
     name and coordinates as well as the modern name and coordinates if
@@ -8,18 +9,15 @@ class Location(object):
     correct. Finally, there is a type field which indicates the type of
     geographical feature represented by this location object."""
 
-    valid_init_args = set([
-        'ptol_name',
-        'ptol_lon',
-        'ptol_lat',
-        'object_type',
-        'object_status',
-        'modern_name',
-        'modern_lon',
-        'modern_lat'])
+    valid_init_args = {'ptol_name', 'ptol_lon', 'ptol_lat', 'object_type', 'object_status', 'modern_name', 'modern_lon',
+                       'modern_lat'}
     
     def __init__(self, **args):
         """Constructs a new location object."""
+        self.ptol_lon = None
+        self.ptol_lat = None
+        self.modern_lon = None
+        self.modern_lat = None
         for key in args:
             if key in Location.valid_init_args:
                 setattr(self, key, args[key])
@@ -32,11 +30,11 @@ class Location(object):
 
     @property
     def ptol_coords(self):
-        return (self.ptol_lon, self.ptol_lat)
+        return self.ptol_lon, self.ptol_lat
 
     @property
     def modern_coords(self):
-        return (self.modern_lon, self.modern_lat)
+        return self.modern_lon, self.modern_lat
         
     description_template = Template(
         """<table>

@@ -3,18 +3,16 @@
 
 import os
 import sys
-import csv
 
 from sklearn.cross_validation import LeaveOneOut
 from geopy.distance import vincenty
 
 import common
 
-from triangulate import Triangulate
-from flocking import Flocking
 from predict import XCOLS, YCOLS
 
 PCOLS = [s.replace('ptol', 'pred') for s in XCOLS]
+
 
 def validate_each(known, model):
     loo = LeaveOneOut(len(known))
@@ -26,6 +24,7 @@ def validate_each(known, model):
         testy = model.predict(testx)
         known.loc[known.iloc[test,:].index, 'pred_lat'] = testy[0][0]
         known.loc[known.iloc[test,:].index, 'pred_lon'] = testy[0][1]
+
 
 def compute_errors(known):
     for i, p in known.iterrows():
@@ -40,12 +39,14 @@ def compute_errors(known):
         known.loc[i, 'sq_err'] = sq_err
         known.loc[i, 'dist_err'] = dist_err
 
+
 def main(filename, model):
     places = common.read_places()
     known, unknown = common.split_places(places)
     validate_each(known, model)
     compute_errors(known)
     known.to_csv(filename, encoding='cp1252')
+
 
 if __name__ == '__main__':
     modelname = sys.argv[1]

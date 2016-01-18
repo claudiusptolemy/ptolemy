@@ -5,12 +5,11 @@
 # focused on book 7 (India region), but can and will be extended
 # to other regions.
 
-import os
-import sys
 from math import *
 
 import numpy as np
 from scipy.spatial import Delaunay
+
 
 def mgc_distance(a, b, gamma=0.95):
     """Return the modified greatest circle distance based on the radian
@@ -20,6 +19,7 @@ def mgc_distance(a, b, gamma=0.95):
                                   cos(a[0]) * cos(b[0]) *
                                   sin((gamma*abs(a[1] - b[1]))/2.0) ** 2)))
 
+
 def sphere_tri_area(x):
     """Compute the area of the triangle defined by the three radian
     latitude and longitude coordinate pairs given by x."""
@@ -28,6 +28,7 @@ def sphere_tri_area(x):
                            tan((s - x[0]) / 2.0) *
                            tan((s - x[1]) / 2.0) *
                            tan((s - x[2]) / 2.0)))
+
 
 def weights(a, b, c, m):
     """Compute the weights to use for the three latitude and longitude
@@ -42,27 +43,29 @@ def weights(a, b, c, m):
     ss = sa + sb + sc
     return tuple(s / ss for s in (sa, sb, sc))
 
+
 def new_point(x, w):
     """Compute a new latitude and longitude coordinate pair by combining the
     three pairs in x according to the weights given in w."""
     return (sum(w[i] * x[i][0] for i in range(3)),
             sum(w[i] * x[i][1] for i in range(3)))
 
+
 class Triangulate(object):
 
-    def fit(self, X, y):
-        self.trainX = X
+    def fit(self, x, y):
+        self.trainX = x
         self.trainy = y
-        self.tri = Delaunay(X, furthest_site=False)
+        self.tri = Delaunay(x, furthest_site=False)
 
-    def predict(self, X):
-        simps = self.tri.find_simplex(X)
+    def predict(self, x):
+        simps = self.tri.find_simplex(x)
         y = np.zeros((len(simps),2))
         for i in range(len(simps)):
             s = simps[i]
             simp = self.tri.simplices[s]
             if s > -1:
-                p = X.iloc[i,:]
+                p = x.iloc[i, :]
                 ap, bp, cp = tuple(tuple(self.trainX.iloc[j]) for j in simp)
                 am, bm, cm = tuple(tuple(self.trainy.iloc[j]) for j in simp)
                 mp = tuple(p)

@@ -1,10 +1,5 @@
 #!/usr/bin/python
 
-DESCRIPTION=""" 
-Initial attempt at getting a Bayesian prior in and a 
-posterior out for the Ptolemy problem.
-"""
-
 import os
 import argparse
 
@@ -14,24 +9,33 @@ import skimage
 from skimage import io
 from scipy.stats import multivariate_normal
 
-import sgdb
-import geocode
 import common
 
 from common import PTOL_HOME
 
+DESCRIPTION = """
+Initial attempt at getting a Bayesian prior in and a
+posterior out for the Ptolemy problem.
+"""
+
+
 def load_image(filename):
-    """Load an image from the images directory."""
+    """Load an image from the images directory.
+    @param filename Name of the file to load.
+    """
     return io.imread(os.path.join(PTOL_HOME, 'Images', filename))
+
 
 def load_gray_image(filename):
     """Load an image from the images directory in grayscale."""
     image = load_image(filename)
     return skimage.color.rgb2gray(image)
 
+
 def save_image(filename, image):
     """Save an image to the images directory."""
     io.imsave(os.path.join(PTOL_HOME, 'Images', filename), image)
+
 
 def save_prob_image(p1, filename):
     """Save a probability grid as an image, adjusting so that
@@ -39,9 +43,11 @@ def save_prob_image(p1, filename):
     pim = p1 * (1/p1.max())
     save_image(filename, pim)
 
+
 def coord_space(a, b, res):
     """Create a grid of res values from a to b, repeated res times."""
     return np.tile(np.linspace(a, b, res), (res, 1))
+
 
 class ImagePrior(object):
     """Represents the state required to adjust predicted Ptolemy
@@ -117,10 +123,12 @@ class ImagePrior(object):
         alat, alon = self.adjust_point(p.original_lat, p.original_lon)
         return pd.Series({'modern_lat': alat, 'modern_lon': alon})
 
+
 def different(mlat, mlon, alat, alon, epsilon):
     """A debugging routine to determine whether the given 2 coordinate
     pairs are different by more than epsilon."""
     return abs(mlat - alat) >= epsilon or abs(mlon - alon) >= epsilon
+
 
 def bayesian_adjust_file(prior_filename, data_file, output_base, res):
     """Adjust the file given in data file using a Bayesian approach,
@@ -147,11 +155,11 @@ def bayesian_adjust_file(prior_filename, data_file, output_base, res):
 
 parser = argparse.ArgumentParser(description=DESCRIPTION)
 parser.add_argument('--prior', required=True,
-                   help='an image file representing the prior')
+                    help='an image file representing the prior')
 parser.add_argument('--data', required=True,
-                   help='an data file output by one of the modules')
+                    help='an data file output by one of the modules')
 parser.add_argument('--output', required=True,
-                   help='the base for the output kml and csv')
+                    help='the base for the output kml and csv')
 parser.add_argument('--resolution', default=720, type=int,
                     help='resolution for the grid approximation')
                     

@@ -5,24 +5,13 @@
 # are selected and how the shift under the transformation from Ptolemy
 # coordinates to modern coordinates.
 
-import os
-import sys
-import math
-import logging
-
-import simplekml
-import numpy as np
-import pandas as pd
-from geopy.distance import vincenty
-from scipy.spatial import Delaunay
 from sklearn.neighbors import NearestNeighbors
 
-import sgdb
-import geocode
 import common
 
 XCOLS = ['ptol_lat','ptol_lon']
 YCOLS = ['modern_lat','modern_lon']
+
 
 def write_neighbor_visualization_kml(known, k=6, verbose=False):
     """Write a KML file showing k nearest neighbors among known locations."""
@@ -58,6 +47,7 @@ def write_neighbor_visualization_kml(known, k=6, verbose=False):
             kml.write('  </Folder>\n')
         kml.write('</Document>\n')
         kml.write('</kml>\n')
+
 
 if __name__ == '__main__':
     known, _ = common.split_places(common.read_places())

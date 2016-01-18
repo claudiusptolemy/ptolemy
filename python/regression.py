@@ -10,15 +10,19 @@ from sklearn.linear_model import LinearRegression
 
 NF = range(2)
 
+
 class Regression(object):
 
-    def fit(self, X, y):
-        self.m = [LinearRegression() for i in NF]
-        for i in NF:
-            self.m[i].fit(X, y.ix[:,i])
+    def __init__(self):
+        self.m = None
 
-    def predict(self, X):
-        y = np.zeros((len(X),2))
+    def fit(self, x, y):
+        self.m = [LinearRegression() for _ in NF]
         for i in NF:
-            y[:,i] = self.m[i].predict(X)
+            self.m[i].fit(x, y.ix[:, i])
+
+    def predict(self, x):
+        y = np.zeros((len(x), 2))
+        for i in NF:
+            y[:, i] = self.m[i].predict(x)
         return y

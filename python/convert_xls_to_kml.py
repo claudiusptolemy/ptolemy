@@ -28,6 +28,7 @@ CNAMES = [
     'object_status',
     'status_code']
 
+
 def read_locations(wb_name, sheet_name):
     """Read all the locations in the Excel workbook called wbname
     and return them as a list of Location objects."""
@@ -39,6 +40,7 @@ def read_locations(wb_name, sheet_name):
         locations.append(Location(**row))
     return locations
 
+
 def write_kml(kml_name, locations):
     """Writes out a KML file based on a list of location objects."""
     kml = simplekml.Kml()
@@ -49,7 +51,8 @@ def write_kml(kml_name, locations):
             description=loc.description)
         p.style.iconstyle.color = loc.object_status_color
     kml.save(kml_name)
-    
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-b', '--workbook', help='', required=True)

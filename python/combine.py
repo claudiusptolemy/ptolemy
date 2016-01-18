@@ -4,7 +4,6 @@
 
 import logging
 
-import csv
 import sgdb
 import geocode
 
@@ -13,6 +12,7 @@ logging.basicConfig(level='DEBUG')
 sg = sgdb.get_instance()
 print 'loaded sgdb'
 print 'place count: %d' % len(sg.places)
+
 
 def print_places():
     ntrain = 0
@@ -35,7 +35,6 @@ def print_places():
                 ntrain += 1
             else:
                 if p.ptol_lat != '':
-                    #print p.ptol_id, geostat, 'WILL PREDICT'
                     npredict += 1
                     if p.modern_name != '':
                         ntrainx += 1

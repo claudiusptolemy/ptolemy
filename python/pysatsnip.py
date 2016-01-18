@@ -1,5 +1,5 @@
 from math import pow, degrees, radians
-from scipy import mat, cos, sin, arctan, sqrt, pi, arctan2
+from scipy import cos, sin, arctan, sqrt, arctan2
 
 # Constants defined by the World Geodetic System 1984 (WGS84)
 a = 6378.137
@@ -8,11 +8,13 @@ esq = 6.69437999014 * 0.001
 e1sq = 6.73949674228 * 0.001
 f = 1 / 298.257223563
 
+
 def cbrt(x):
     if x >= 0: 
         return pow(x, 1.0/3.0)
     else:
         return -pow(abs(x), 1.0/3.0)
+
 
 # https://code.google.com/p/pysatel/source/browse/trunk/coord.py?r=22
 def ecef2geodetic(x, y, z):
@@ -37,6 +39,7 @@ def ecef2geodetic(x, y, z):
     lat = arctan((z + e1sq * Z_0) / r)
     lon = arctan2(y, x)
     return degrees(lat), degrees(lon)
+
 
 # https://code.google.com/p/pysatel/source/browse/trunk/coord.py?r=22
 def geodetic2ecef(lat, lon, alt):

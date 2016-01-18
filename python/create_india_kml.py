@@ -1,8 +1,6 @@
-import os
 import glob
 import re
 import csv
-import argparse
 
 import simplekml
 from string import Template
@@ -19,6 +17,7 @@ DESC_TEMPLATE_TEXT = """\
 
 DESC_TEMPLATE = Template(DESC_TEMPLATE_TEXT)
 
+
 def max_cdots(line):
     mdots = 0
     cdots = 0
@@ -32,6 +31,7 @@ def max_cdots(line):
                 mdots = cdots
             cdots = 0
     return mdots
+
 
 def cdot_regs(line, lim):
     regs = []
@@ -55,7 +55,10 @@ def cdot_regs(line, lim):
             cdots = 0
     return regs
 
+
 numr1 = re.compile('.*?(\d+).*?')
+
+
 def parse_mins(text):
     text = text.strip()
     m = numr1.match(text)
@@ -64,7 +67,10 @@ def parse_mins(text):
     else:
         return '0'
 
+
 rc1 = re.compile(r'^.*?(\d+) *@(.*?)(\d+) *@(.*?)$')
+
+
 def parse_coords(text):
     text = text.strip()
     text = text.replace('\342\200\231', "'")
@@ -79,6 +85,7 @@ def parse_coords(text):
     else:
         return '<parse error>'
 
+
 def parse_line(line):
     regs = cdot_regs(line, 3)
     if not regs:
@@ -86,6 +93,7 @@ def parse_line(line):
     d1 = regs[0][0]
     d2 = regs[-1][1]
     return line[0:(d1-1)].strip(), line[(d2+1):]
+
 
 def dms_to_dec(dms):
     dec = float(dms[0])
@@ -95,10 +103,13 @@ def dms_to_dec(dms):
         dec += float(dms[2]) / 3600.0
     return dec
 
+
 def txt(text):
     return text.decode('us-ascii', 'ignore')
 
+
 class Loc(object):
+
     def __init__(self, page, line, name, lon, lat, text):
         self.page = page
         self.line = line
@@ -106,8 +117,10 @@ class Loc(object):
         self.lon = lon
         self.lat = lat
         self.text = txt(text)
+
     def __getitem__(self, name):
         return getattr(self, name)
+
 
 def parse_loc(page_num, line_num, line):
     name, coords_text = parse_line(line)
@@ -120,6 +133,7 @@ def parse_loc(page_num, line_num, line):
         return Loc(page_num, line_num, name, lon, lat, line)
     except ValueError, e:
         return None
+
 
 def read_locs_dir(dir_path):
     locs = []
@@ -137,12 +151,14 @@ def read_locs_dir(dir_path):
                         locs.append(loc)
     return locs
 
+
 def write_locs_csv(filename, locs):
     with open(filename, 'wb') as outfile:
         writer = csv.writer(outfile)
         for loc in locs:
             row = [loc.page, loc.line, loc.name, loc.lon, loc.lat, loc.text]
             writer.writerow(row)
+
 
 def write_locs_kml(kml_name, locs):
     """Writes out a KML file based on a list of location objects."""
@@ -152,9 +168,9 @@ def write_locs_kml(kml_name, locs):
             name=loc.name.decode('us-ascii', 'ignore'),
             coords=[(loc.lon, loc.lat)],
             description=DESC_TEMPLATE.substitute(loc))
-        #p.style.iconstyle.color = loc.object_status_color
     kml.save(kml_name)
-    
+
+
 if __name__ == '__main__':
     locs = read_locs_dir('india/*.txt')
     write_locs_csv('india.csv', locs)

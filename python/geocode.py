@@ -1,11 +1,11 @@
 import os
 import json
-import logging
 import pandas as pd
 
 PTOL_HOME = os.environ['PTOL_HOME']
 GEOCODE_HOME = os.path.join(PTOL_HOME, 'Data', 'geocode')
 SUFFIX = 'json'
+
 
 class Geocoding(object):
 
@@ -25,13 +25,10 @@ class Geocoding(object):
     def lng(self):
         return self.data['results'][0]['geometry']['location']['lng']
 
+    @property
     def to_panda_dict_row(self):
-        row = {}
-        row['ptol_id'] = self.ptol_id
-        row['modern_lat'] = self.lat
-        row['modern_lon'] = self.lng
-        return row
-        
+        return {'ptol_id': self.ptol_id, 'modern_lat': self.lat, 'modern_lon': self.lng}
+
 
 def get_geocoding(ptol_id):
     filename = '%s.%s' % (ptol_id, SUFFIX)
@@ -39,6 +36,7 @@ def get_geocoding(ptol_id):
         jsontext = jsonfile.read()
         jsondata = json.loads(jsontext)
         return Geocoding(ptol_id, jsondata)
+
 
 def read_geocodes():
     places = []
@@ -48,7 +46,7 @@ def read_geocodes():
         try:
             geo = get_geocoding(ptol_id)
             if geo.good:
-                places.append(geo.to_panda_dict_row())
+                places.append(geo.to_panda_dict_row)
         except ValueError as e:
             print ptol_id, e
     return pd.DataFrame(places)

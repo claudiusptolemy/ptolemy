@@ -3,21 +3,15 @@
 # the places that have been suggested by other means.
 
 import os
-import csv
-import random
 import logging
 
-import simplekml
-import numpy as np
 import pandas as pd
-from sklearn import linear_model
 from sklearn.cross_validation import LeaveOneOut
 from geopy.distance import vincenty
 
 import sgdb
 import geocode
 
-from triangulate import Triangulation
 from flocking import FlockingModel
 
 PTOL_HOME = os.environ['PTOL_HOME']
@@ -46,7 +40,6 @@ places = places.loc[places.ptol_id.str.startswith(TARGET_BOOK), :]
 places = pd.merge(places, geocode.read_geocodes(), how='left')
 known = places.loc[pd.notnull(places.modern_lat), :]
 known.is_copy = False
-#known.to_csv('../Data/regression_measure_before.csv', encoding='cp1252')
 
 loo = LeaveOneOut(len(known))
 for train, test in loo:

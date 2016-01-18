@@ -64,9 +64,11 @@ CATEGORY_FIELDNAMES = [
 
 class Place(object):
     __slots__ = PLACE_FIELDNAMES
+
     def __init__(self, d):
         for k, v in d.items():
             setattr(self, k, v)
+
 
 class SGDB(object):
 
@@ -74,12 +76,14 @@ class SGDB(object):
         self.places = []
         self.places_by_place_id = {}
 
-    def get_place(place_id):
+    def get_place(self, place_id):
         return self.places_by_place_id[place_id]
+
 
 def get_filename(table_name):
     filename = '%s.tab' % SGDB_TABLE_TRANSLATE[table_name]
     return os.path.join(PTOL_HOME, 'Data', 'PtolCD', 'dat', filename)
+
 
 def load_places():
     filename = get_filename('Places')
@@ -89,6 +93,7 @@ def load_places():
                                 delimiter=DELIMITER)
         return [Place(d) for d in reader]
 
+
 def load_sgdb():
     sgdb = SGDB()
     sgdb.places = load_places()
@@ -97,9 +102,10 @@ def load_sgdb():
 
 sgdb = None
 
+
 def get_instance():
     global sgdb
-    if sgdb == None:
+    if sgdb is None:
         sgdb = load_sgdb()
     return sgdb
 
@@ -108,10 +114,10 @@ def read_tab(table, names, encoding):
     filename = os.path.join(PTOL_CD, 'dat', '%s.tab' % table)
     return pd.read_csv(filename, sep='\t', header=-1, names=names, encoding=encoding)
 
+
 def read_places():
     return read_tab('Orte', PLACE_FIELDNAMES, 'cp1252')
 
+
 def read_categories():
-    filename = os.path.join(PTOL_CD, 'dat', 'Kategorien.tab')
     return read_tab('Kategorien', CATEGORY_FIELDNAMES, 'cp850')
-                             

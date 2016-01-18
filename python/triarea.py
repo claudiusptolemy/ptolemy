@@ -5,20 +5,18 @@
 # focused on book 7 (India region), but can and will be extended
 # to other regions.
 
-import os
-import sys
-
 import numpy as np
-import pandas as pd
 from scipy.spatial import Delaunay
 from scipy.optimize import minimize
 
 from triangulate import weights
 
+
 def objective(x, mp, ap, bp, cp, am, bm, cm):
     w1 = weights(ap, bp, cp, mp)
     w2 = weights(am, bm, cm, x)
     return sum(w1[i]*w2[i] for i in range(len(w1)))
+
 
 def solver(x0, mp, ap, bp, cp, am, bm, cm):
     try:
@@ -27,6 +25,7 @@ def solver(x0, mp, ap, bp, cp, am, bm, cm):
         return tuple(res.x)
     except ValueError:
         return (0.0, 0.0)
+
 
 class Triarea(object):
 

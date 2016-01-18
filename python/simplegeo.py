@@ -12,9 +12,17 @@ import json
 
 from Tkinter import *
 
+
 class Application(Frame):
 
-    def createWidgets(self):
+    def __init__(self):
+        self.ptol_id_label = None
+        self.ptol_id_entry = None
+        self.coords_label = None
+        self.coords_entry = None
+        self.write_button = None
+
+    def create_widgets(self):
         self.ptol_id_label = Label(self, text="Ptol ID")
         self.ptol_id_label.grid(row=0, column=0, sticky=W)
         self.ptol_id_entry = Entry(self, bd=1)
@@ -70,7 +78,7 @@ class Application(Frame):
 
     def __init__(self, master=None):
         Frame.__init__(self, master)
-        self.createWidgets()
+        self.create_widgets()
         self.pack()
 
 root = Tk()

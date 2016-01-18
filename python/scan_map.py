@@ -2,7 +2,6 @@ import os
 import sys
 
 import twain
-import Image
 
 if len(sys.argv) != 2:
     print 'usage: scan_map.py filename'
@@ -22,7 +21,7 @@ source.SetCapability(twain.ICAP_PIXELTYPE, twain.TWTY_UINT16, 0)
 source.SetCapability(twain.ICAP_ORIENTATION, twain.TWTY_UINT16, 1)
 source.SetCapability(twain.ICAP_YRESOLUTION, twain.TWTY_FIX32, 600.0)
 source.SetCapability(twain.ICAP_XRESOLUTION, twain.TWTY_FIX32, 600.0)
-source.RequestAcquire(False,False)
+source.RequestAcquire(False, False)
 source.SetXferFileName(filename, twain.TWFF_PNG)
 rv = source.XferImageByFile()
 source.destroy()

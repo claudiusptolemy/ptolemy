@@ -41,6 +41,8 @@ def read_places(id_starts_with):
     places = places.loc[:, KEY_PLACE_FIELDNAMES]
     places = places.loc[places.ptol_id.str.startswith(id_starts_with), :]
     places = pd.merge(places, geocode.read_geocodes(), how='left')
+    places.loc[pd.notnull(places.modern_lat), 'disposition'] = 'known'
+    places.loc[pd.isnull(places.modern_lat), 'disposition'] = 'unknown'
     places.set_index('ptol_id', False, False, True, True)
     return places
 
@@ -60,14 +62,11 @@ def read_places_xlsx(filename):
 
 def split_places(places):
     """Split places into known and unknown places."""
-    known = places.loc[pd.notnull(places.modern_lat), :]
-    unknown = places.loc[pd.isnull(places.modern_lat), :]
+    known = places.loc[places.disposition == 'known', :]
+    unknown = places.loc[places.disposition != 'known', :]
     # prevent warning below that it's a copy of places
     known.is_copy = False
     unknown.is_copy = False 
-    # add disposition column (known vs. unknown)
-    known.loc[:, 'disposition'] = 'known'
-    unknown.loc[:, 'disposition'] = 'unknown'
     return known, unknown
 
 

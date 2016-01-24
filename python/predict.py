@@ -21,9 +21,11 @@ def main(filename, model, places):
     unknownx = unknown.loc[:, XCOLS]
     unknowny = model.predict(unknownx)
     unknown.loc[:, YCOLS] = unknowny
+    title = ' '.join(os.path.basename(filename)[0:-4].split('_'))
     common.write_kml_file(filename, None, known, unknown)
     common.write_csv_file(filename[0:-4] + '.csv', known, unknown)
-
+    common.write_map_file(filename[0:-4] + '.pdf', known, unknown, 30, 24, 300, 'ptol_name', title)
+    common.write_map_file(filename[0:-4] + '.png', known, unknown, 30, 24, 300, 'ptol_name', title)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

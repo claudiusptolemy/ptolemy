@@ -7,9 +7,13 @@ import os
 import logging
 
 import pandas as pd
+import numpy as np
 
 import sgdb
 import geocode
+
+from mpl_toolkits.basemap import Basemap
+import matplotlib.pyplot as plt
 
 PTOL_HOME = os.environ['PTOL_HOME']
 logging.basicConfig(level='DEBUG')
@@ -41,6 +45,8 @@ def read_places(id_starts_with):
     places = places.loc[:, KEY_PLACE_FIELDNAMES]
     places = places.loc[places.ptol_id.str.startswith(id_starts_with), :]
     places = pd.merge(places, geocode.read_geocodes(), how='left')
+    places.loc[pd.notnull(places.modern_lat), 'disposition'] = 'known'
+    places.loc[pd.isnull(places.modern_lat), 'disposition'] = 'unknown'
     places.set_index('ptol_id', False, False, True, True)
     return places
 
@@ -48,10 +54,10 @@ def read_places(id_starts_with):
 def read_places_xlsx(filename):
     """Read a set of places from an Excel spreadsheet, formatted
     the way we've adopted during this project."""
-    places = pd.read_excel(filename)
-    places = places.iloc[:,0:8]
-    places.columns = ['ptol_id','ptol_name','modern_name',
-                      'ptol_lat','ptol_lon','modern_lat','modern_lon',
+    places = pd.read_excel(filename, encoding='utf-8')
+    places = places.iloc[:, 0:8]
+    places.columns = ['ptol_id', 'ptol_name', 'modern_name',
+                      'ptol_lat', 'ptol_lon', 'modern_lat', 'modern_lon',
                       'disposition']
     places = places.drop_duplicates('ptol_id')
     places.set_index('ptol_id', False, False, True, True)
@@ -60,14 +66,11 @@ def read_places_xlsx(filename):
 
 def split_places(places):
     """Split places into known and unknown places."""
-    known = places.loc[pd.notnull(places.modern_lat), :]
-    unknown = places.loc[pd.isnull(places.modern_lat), :]
+    known = places.loc[places.disposition == 'known', :]
+    unknown = places.loc[places.disposition != 'known', :]
     # prevent warning below that it's a copy of places
     known.is_copy = False
     unknown.is_copy = False 
-    # add disposition column (known vs. unknown)
-    known.loc[:, 'disposition'] = 'known'
-    unknown.loc[:, 'disposition'] = 'unknown'
     return known, unknown
 
 
@@ -168,6 +171,51 @@ def write_csv_file(filename, known, unknown):
     places.to_csv(filename, index=False, encoding='utf-8', columns=cols)
 
 
+def write_map_file(filename, known, unknown, width, height, dpi, labels_col, title):
+    data = unknown.append(known, True, False)
+    enlarge_by = 0.1
+    plt.figure(num=None, figsize=(width, height), dpi=dpi,
+               facecolor='w', edgecolor='k')
+    data = data.loc[data.modern_lat != 0.0, :]
+    ll = data.modern_lat.min(), data.modern_lon.min(),
+    ur = data.modern_lat.max(), data.modern_lon.max(),
+    adj = tuple((ur[i] - ll[i]) * enlarge_by for i in range(2))
+    ll = tuple(ll[i] - adj[i] for i in range(2))
+    ur = tuple(ur[i] + adj[i] for i in range(2))
+    lat0 = ll[0] + ((ur[0] - ll[0]) / 2.0)
+    lon0 = ll[1] + ((ur[1] - ll[1]) / 2.0)
+    bmap = Basemap(projection='merc', resolution='l',
+                   lon_0=lon0,
+                   lat_0=90.0, lat_ts=lat0,
+                   llcrnrlat=ll[0],
+                   llcrnrlon=ll[1],
+                   urcrnrlat=ur[0],
+                   urcrnrlon=ur[1])
+    bmap.shadedrelief()
+    bmap.drawmapboundary()
+    bmap.drawmeridians(np.arange(0, 360, 5), labels=[0, 0, 0, 1], fontsize=10)
+    bmap.drawparallels(np.arange(-90, 90, 5), labels=[1, 0, 0, 0], fontsize=10)
+    bmap.drawcounties(linewidth=1)
+    for disp, col in [('known', 'c'), ('unknown', 'm'), ('tentative', 'b')]:
+        i = data.disposition == disp
+        lats = [lat for lat in list(data.loc[i, 'modern_lat']) if lat != 0.0]
+        lons = [lon for lon in list(data.loc[i, 'modern_lon']) if lon != 0.0]
+        x, y = bmap(lons, lats)
+        bmap.scatter(x, y, 8, marker='o', color=col, label=disp)
+        if filename:
+            labels = []
+            for s in data.loc[i, labels_col]:
+                labels.append(s if type(s) == unicode else u'')
+            for label, xi, yi in zip(labels, x, y):
+                plt.text(xi, yi, label)
+    plt.title(title)
+    plt.legend()
+    if filename:
+        plt.savefig(filename, dpi=dpi)
+    else:
+        plt.show()
+
+
 def write_point_style(kml, color_name, color_code):
     kml.write('''
         <Style id="%s_point">
@@ -213,7 +261,6 @@ def write_kml_file(filename, tri, known, unknown):
         kml.write('<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:gx="http://www.google.com/kml/ext/2.2">\n')
         kml.write('<Document id="ptolemy-7.01">\n')
         write_styles(kml)
-    
         write_points(kml, known, 'ptol_id', 'ptol_lon', 'ptol_lat', 'yellow')
         write_points(kml, known, 'ptol_id', 'modern_lon', 'modern_lat', 'yellow')
         write_points(kml, unknown, 'ptol_id', 'ptol_lon', 'ptol_lat', 'red')

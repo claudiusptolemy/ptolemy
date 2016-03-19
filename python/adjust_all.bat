@@ -1,0 +1,10 @@
+python bayesian_adjust.py --prior arabia_prior.png --data triangulate_ArabiaFelix.csv --output triangulate_ArabiaFelix_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40
+python bayesian_adjust.py --prior arabia_prior.png --data triangulate_ArabiaDeserta.csv --output triangulate_ArabiaDeserta_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40
+python bayesian_adjust.py --prior arabia_prior.png --data triangulate_Syria.csv --output triangulate_Syria_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40
+python bayesian_adjust.py --prior arabia_prior.png --data triangulate_JudaeaPalestina.csv --output triangulate_JudaeaPalestina_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40
+python bayesian_adjust.py --prior arabia_prior.png --data triangulate_ArabiaPetraea.csv --output triangulate_ArabiaPetraea_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40
+python bayesian_adjust.py --prior arabia_prior.png --data flocking_ArabiaFelix.csv --output flocking_ArabiaFelix_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40
+python bayesian_adjust.py --prior arabia_prior.png --data flocking_ArabiaDeserta.csv --output flocking_ArabiaDeserta_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40
+python bayesian_adjust.py --prior arabia_prior.png --data flocking_Syria.csv --output flocking_Syria_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40
+python bayesian_adjust.py --prior arabia_prior.png --data flocking_JudaeaPalestina.csv --output flocking_JudaeaPalestina_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40
+python bayesian_adjust.py --prior arabia_prior.png --data flocking_ArabiaPetraea.csv --output flocking_ArabiaPetraea_adjust --lower_left_lon 30 --lower_left_lat 10 --upper_right_lon 60 --upper_right_lat 40

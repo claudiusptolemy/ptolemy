@@ -96,6 +96,7 @@ class ImagePrior(object):
         """Compute the MAP (maximum a-posteriori) point (i.e., the point
         in the grid with the highest probability), and return the lat/lon
         coordinate pair it represents."""
+        #print p.argmax(), p.shape, np.unravel_index(p.argmax(), p.shape), self.grid_to_latlon(np.unravel_index(p.argmax(), p.shape))
         return self.grid_to_latlon(np.unravel_index(p.argmax(), p.shape))
 
     def adjust_point(self, lat, lon, ptol_id=None):
@@ -129,14 +130,16 @@ def different(mlat, mlon, alat, alon, epsilon):
     pairs are different by more than epsilon."""
     return abs(mlat - alat) >= epsilon or abs(mlon - alon) >= epsilon
 
-
-def bayesian_adjust_file(prior_filename, data_file, output_base, res):
+# original coords: (35,5) and (65,95)
+def bayesian_adjust_file(prior_filename, data_file, output_base, res, lower_left_coord, upper_right_coord):
     """Adjust the file given in data file using a Bayesian approach,
     treating the given prior_filename as an image representing the prior,
     and computing a new modern coordinate pair as the MAP of the posterior
     resulting, all using grid approximation."""
-    prior = ImagePrior(prior_filename, (35,5), (65,95), res)
-    places = pd.read_csv(data_file, encoding='cp1252')
+    lon_lim = lower_left_coord[0], upper_right_coord[0]
+    lat_lim = upper_right_coord[1], lower_left_coord[1]
+    prior = ImagePrior(prior_filename, lat_lim, lon_lim, res)
+    places = pd.read_csv(data_file, encoding='utf-8')
     places.rename(columns={
         'modern_lat': 'original_lat',
         'modern_lon': 'original_lon'}, inplace=True)
@@ -144,7 +147,7 @@ def bayesian_adjust_file(prior_filename, data_file, output_base, res):
     known.is_copy = False
     known.ix[:, 'modern_lat'] = known.ix[:, 'original_lat']
     known.ix[:, 'modern_lon'] = known.ix[:, 'original_lon']
-    unknown = places[places.disposition == 'unknown']
+    unknown = places[places.disposition != 'known']
     unknown.is_copy = False
     adjusted = unknown.apply(prior.bayesian_adjust, axis=1)
     unknown = unknown.merge(adjusted, left_index=True, right_index=True)
@@ -162,9 +165,19 @@ parser.add_argument('--output', required=True,
                     help='the base for the output kml and csv')
 parser.add_argument('--resolution', default=720, type=int,
                     help='resolution for the grid approximation')
-                    
+parser.add_argument('--lower_left_lon', type=float,
+                    help='latitude for the lower left coordinate')
+parser.add_argument('--lower_left_lat', type=float,
+                    help='latitude for the lower left coordinate')
+parser.add_argument('--upper_right_lon', type=float,
+                    help='longitude for the upper right coordinate')
+parser.add_argument('--upper_right_lat', type=float,
+                    help='latitude for the upper right coordinate')
+
 if __name__ == '__main__':
     args = parser.parse_args()
     bayesian_adjust_file(args.prior,
                          os.path.join(PTOL_HOME, 'Data', args.data),
-                         args.output, args.resolution)
+                         args.output, args.resolution,
+                         (args.lower_left_lon, args.lower_left_lat),
+                         (args.upper_right_lon, args.upper_right_lat))

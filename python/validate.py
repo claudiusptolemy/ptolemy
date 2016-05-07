@@ -75,6 +75,18 @@ if __name__ == '__main__':
     parser.add_argument('--sgdb', help='read from sgdb with given prefix')
     parser.add_argument('--xlsx', help='xlsx to read from instead of sgdb')
     parser.add_argument('--output', help='output filename')
+    parser.add_argument('--prior', required=True,
+                        help='an image file representing the prior')
+    parser.add_argument('--resolution', default=720, type=int,
+                        help='resolution for the grid approximation')
+    parser.add_argument('--lower_left_lon', type=float,
+                        help='latitude for the lower left coordinate')
+    parser.add_argument('--lower_left_lat', type=float,
+                        help='latitude for the lower left coordinate')
+    parser.add_argument('--upper_right_lon', type=float,
+                        help='longitude for the upper right coordinate')
+    parser.add_argument('--upper_right_lat', type=float,
+                        help='latitude for the upper right coordinate')
 
     args = parser.parse_args()
 
@@ -95,10 +107,10 @@ if __name__ == '__main__':
 
     lower_left_coord = (30, 10)
     upper_right_coord = (60, 40)
-    prior_filename = 'arabia_prior.png'
-    lon_lim = lower_left_coord[0], upper_right_coord[0]
-    lat_lim = upper_right_coord[1], lower_left_coord[1]
-    res = 720
+    prior_filename = args.prior
+    lon_lim = args.lower_left_lon, args.upper_right_lon
+    lat_lim = args.upper_right_lat, args.lower_left_lat
+    res = args.resolution
     prior = bayesian_adjust.ImagePrior(prior_filename, lat_lim, lon_lim, res)
 
 
